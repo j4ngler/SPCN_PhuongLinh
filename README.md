@@ -2,19 +2,9 @@
 
 ## 🎯 Mục tiêu
 
-Xây dựng một nền tảng thông minh giúp phân tích kết quả học tập của sinh viên và đưa ra gợi ý học tập cá nhân hóa theo năng lực, sở thích và định hướng nghề nghiệp.
+Xây dựng một nền tảng thông minh giúp phân tích kết quả học tập của học sinh và đưa ra gợi ý học tập cá nhân hóa theo năng lực, sở thích và định hướng nghề nghiệp.
 
-Hệ thống hỗ trợ sinh viên hiểu rõ điểm mạnh – yếu của bản thân, đồng thời giúp giáo viên và phụ huynh theo dõi tiến độ học tập một cách trực quan.
-
-## 🆚 So sánh với SPCN_HaiAnh
-
-| Tính năng | SPCN_HaiAnh | SPCN_PhuongLinh |
-|-----------|-------------|-----------------|
-| **Mục đích** | Xếp lịch học (Scheduling) | Cá nhân hóa học tập |
-| **AI Model** | RandomForest (Ranking) | RandomForestRegressor (Scoring) |
-| **Đầu vào** | Thời khóa biểu, ràng buộc | Điểm số, phản hồi, hồ sơ |
-| **Đầu ra** | Lịch học được xếp | Gợi ý học tập, AI Score |
-| **Dashboard** | Hiển thị lịch học | Hiển thị năng lực, tiến độ |
+Hệ thống hỗ trợ học sinh hiểu rõ điểm mạnh – yếu của bản thân, đồng thời giúp giáo viên và phụ huynh theo dõi tiến độ học tập một cách trực quan.
 
 ## 🚀 Bắt đầu nhanh
 
