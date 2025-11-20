@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}Trang chủ - Nền tảng Học tập Cá nhân hóa{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <h1>🎯 Nền tảng Học tập Cá nhân hóa</h1>
+    <p class="subtitle">Phân tích kết quả học tập và đưa ra gợi ý học tập phù hợp với năng lực của bạn</p>
+</div>
+
+<!-- Tính năng chính cho người dùng -->
+<div class="section-header">
+    <h2>✨ Tính năng chính</h2>
+    <p>Các chức năng dành cho học sinh và phụ huynh</p>
+</div>
+
+<div class="features">
+    <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Phân tích Năng lực</h3>
+        <p>Hiểu rõ điểm mạnh và điểm yếu của bản thân thông qua AI Score</p>
+    </div>
+    
+    <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <h3>Gợi ý Cá nhân hóa</h3>
+        <p>Nhận gợi ý môn học và kỹ năng phù hợp với năng lực và định hướng nghề nghiệp</p>
+    </div>
+    
+    <div class="feature-card">
+        <div class="feature-icon">📈</div>
+        <h3>Theo dõi Tiến độ</h3>
+        <p>Xem biểu đồ tiến bộ theo thời gian và cải thiện kết quả học tập</p>
+    </div>
+</div>
+
+<!-- Các công việc hệ thống -->
+<div class="section-header">
+    <h2>⚙️ Các công việc hệ thống</h2>
+    <p>Hệ thống có thể thực hiện các nhiệm vụ sau</p>
+</div>
+
+<div class="system-tasks">
+    <div class="task-group">
+        <h3 class="task-group-title">📥 Xử lý Dữ liệu</h3>
+        <div class="task-cards">
+            <div class="task-card">
+                <h4>Làm sạch dữ liệu</h4>
+                <p>Đọc và xử lý 5 file CSV: môn học, điểm số, nhận xét, định hướng nghề nghiệp, hồ sơ học sinh</p>
+            </div>
+            <div class="task-card">
+                <h4>Chuẩn hóa dữ liệu</h4>
+                <p>Loại bỏ dữ liệu thiếu, xử lý giá trị ngoại lai, chuẩn hóa định dạng</p>
+            </div>
+            <div class="task-card">
+                <h4>Mã hóa đặc trưng</h4>
+                <p>Feature Engineering: mã hóa dữ liệu phân loại, chuẩn hóa dữ liệu số</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="task-group">
+        <h3 class="task-group-title">🤖 AI & Machine Learning</h3>
+        <div class="task-cards">
+            <div class="task-card">
+                <h4>Huấn luyện mô hình</h4>
+                <p>RandomForestRegressor để dự đoán AI Score với độ chính xác ≥80%</p>
+            </div>
+            <div class="task-card">
+                <h4>Tính AI Score</h4>
+                <p>Điểm phù hợp giữa học sinh và môn học/kỹ năng, dự đoán điểm số</p>
+            </div>
+            <div class="task-card">
+                <h4>Tạo gợi ý thông minh</h4>
+                <p>Phân tích AI Score để đưa ra gợi ý môn học và kỹ năng phù hợp</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="task-group">
+        <h3 class="task-group-title">💾 Quản lý Database</h3>
+        <div class="task-cards">
+            <div class="task-card">
+                <h4>SQLite Database</h4>
+                <p>Quản lý 8 bảng: subjects, grades, feedback, profiles, ai_scores, recommendations, users</p>
+            </div>
+            <div class="task-card">
+                <h4>Lưu trữ dữ liệu</h4>
+                <p>Lưu kết quả xử lý, AI scores, gợi ý học tập vào database</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="task-group">
+        <h3 class="task-group-title">🔐 Xác thực & Phân quyền</h3>
+        <div class="task-cards">
+            <div class="task-card">
+                <h4>Đăng ký/Đăng nhập</h4>
+                <p>Quản lý tài khoản học sinh và phụ huynh với bảo mật mật khẩu</p>
+            </div>
+            <div class="task-card">
+                <h4>Phân quyền người dùng</h4>
+                <p>Học sinh xem kết quả của mình, phụ huynh xem kết quả của con</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="task-group">
+        <h3 class="task-group-title">🌐 Web Application</h3>
+        <div class="task-cards">
+            <div class="task-card">
+                <h4>Dashboard học tập</h4>
+                <p>Hiển thị kết quả, biểu đồ năng lực, gợi ý học tập trực quan</p>
+            </div>
+            <div class="task-card">
+                <h4>API RESTful</h4>
+                <p>3 endpoints: /recommend, /api/ai_scores, /api/abilities</p>
+            </div>
+            <div class="task-card">
+                <h4>Giao diện thân thiện</h4>
+                <p>Trang chủ, đăng nhập, đăng ký, dashboard với UI hiện đại</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="task-group">
+        <h3 class="task-group-title">🔄 Pipeline Tự động</h3>
+        <div class="task-cards">
+            <div class="task-card">
+                <h4>Xử lý tự động</h4>
+                <p>Chạy toàn bộ quy trình: xử lý dữ liệu → Feature Engineering → Huấn luyện → Gợi ý</p>
+            </div>
+            <div class="task-card">
+                <h4>Cấu hình linh hoạt</h4>
+                <p>Quản lý cấu hình mô hình AI và lộ trình học tập qua JSON</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="cta">
+    <h2>🚀 Bắt đầu ngay hôm nay!</h2>
+    <p>Nhập mã học sinh để xem gợi ý học tập cá nhân hóa</p>
+    <form action="{{ url_for('recommend') }}" method="GET" class="search-form">
+        <input type="text" name="student_id" placeholder="Nhập mã học sinh..." required>
+        <button type="submit">Tìm kiếm</button>
+    </form>
+    {% if not user %}
+    <div class="cta-links">
+        <p>Hoặc <a href="{{ url_for('login') }}">đăng nhập</a> / <a href="{{ url_for('register') }}">đăng ký</a> để sử dụng đầy đủ tính năng</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

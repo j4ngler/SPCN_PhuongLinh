@@ -1,0 +1,7 @@
+Flask
+# Dành cho các script AI/ML trong thư mục scripts/
+pandas
+numpy
+scikit-learn
+openpyxl
+

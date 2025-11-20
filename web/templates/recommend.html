@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Gợi ý Học tập - Nền tảng Học tập Cá nhân hóa{% endblock %}
+
+{% block content %}
+<div class="recommend-page">
+    <h1>🎯 Gợi ý Học tập Cá nhân hóa</h1>
+    
+    <form id="recommendForm" class="recommend-form">
+        <div class="form-group">
+            <label for="student_id">Mã học sinh:</label>
+            <input type="text" id="student_id" name="student_id" required placeholder="VD: SV001">
+        </div>
+        
+        <div class="form-group">
+            <label for="top_n">Số lượng gợi ý:</label>
+            <input type="number" id="top_n" name="top_n" value="10" min="1" max="50">
+        </div>
+        
+        <button type="submit">Tìm gợi ý</button>
+    </form>
+    
+    <div id="results" class="results" style="display: none;">
+        <h2>Kết quả gợi ý</h2>
+        <div id="recommendations-list"></div>
+    </div>
+    
+    <div id="error" class="error" style="display: none;"></div>
+</div>
+
+<script>
+document.getElementById('recommendForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const data = {
+        student_id: formData.get('student_id'),
+        top_n: parseInt(formData.get('top_n'))
+    };
+    
+    const resultsDiv = document.getElementById('results');
+    const errorDiv = document.getElementById('error');
+    const listDiv = document.getElementById('recommendations-list');
+    
+    resultsDiv.style.display = 'none';
+    errorDiv.style.display = 'none';
+    
+    try {
+        const response = await fetch('/recommend', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            let html = `<p>Tìm thấy <strong>${result.count}</strong> gợi ý cho học sinh <strong>${result.student_id}</strong></p>`;
+            html += '<table class="recommendations-table"><thead><tr><th>STT</th><th>Mã môn</th><th>Tên môn</th><th>AI Score</th><th>Lý do</th></tr></thead><tbody>';
+            
+            result.recommendations.forEach((rec, index) => {
+                html += `<tr>
+                    <td>${rec.priority}</td>
+                    <td>${rec.subject_code}</td>
+                    <td>${rec.subject_name}</td>
+                    <td><span class="score">${(rec.ai_score * 100).toFixed(1)}%</span></td>
+                    <td>${rec.reason}</td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table>';
+            html += `<p><a href="/dashboard/${result.student_id}" class="btn">Xem Dashboard đầy đủ</a></p>`;
+            
+            listDiv.innerHTML = html;
+            resultsDiv.style.display = 'block';
+        } else {
+            errorDiv.textContent = result.error || 'Có lỗi xảy ra';
+            errorDiv.style.display = 'block';
+        }
+    } catch (error) {
+        errorDiv.textContent = 'Lỗi kết nối: ' + error.message;
+        errorDiv.style.display = 'block';
+    }
+});
+</script>
+{% endblock %}
+

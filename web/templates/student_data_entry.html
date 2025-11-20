@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Nhập dữ liệu học sinh{% endblock %}
+
+{% block content %}
+<div class="data-entry-page">
+    <h1>📘 Nhập dữ liệu học tập</h1>
+    <p class="subtitle">Điền thông tin điểm số để hệ thống tạo dữ liệu cá nhân hóa cho bạn.</p>
+    
+    {% if message %}
+    <div class="alert success">{{ message }}</div>
+    {% endif %}
+    
+    {% if error %}
+    <div class="alert error">{{ error }}</div>
+    {% endif %}
+    
+    <form method="POST" class="data-entry-form">
+        <div class="form-group">
+            <label for="subject_code">Môn học <span class="required">*</span></label>
+            <select id="subject_code" name="subject_code" required>
+                <option value="">-- Chọn môn học --</option>
+                {% for subject in subjects %}
+                <option value="{{ subject.subject_code }}">{{ subject.subject_code }} - {{ subject.subject_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group two-col">
+            <div>
+                <label for="grade_score">Điểm số (0-10) <span class="required">*</span></label>
+                <input type="number" id="grade_score" name="grade_score" min="0" max="10" step="0.1" required>
+            </div>
+            <div>
+                <label for="semester">Học kỳ <span class="required">*</span></label>
+                <select id="semester" name="semester" required>
+                    <option value="1">Học kỳ 1</option>
+                    <option value="2">Học kỳ 2</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-group two-col">
+            <div>
+                <label for="attendance_rate">Điểm chuyên cần (%)</label>
+                <input type="number" id="attendance_rate" name="attendance_rate" min="0" max="100" step="1" value="95">
+            </div>
+            <div>
+                <label for="homework_completion">Hoàn thành bài tập (%)</label>
+                <input type="number" id="homework_completion" name="homework_completion" min="0" max="100" step="1" value="90">
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="year">Năm học</label>
+            <input type="number" id="year" name="year" value="2024" min="2020" max="2030">
+        </div>
+        
+        <div class="form-group">
+            <label for="comment">Nhận xét (tuỳ chọn)</label>
+            <textarea id="comment" name="comment" rows="2" placeholder="Ví dụ: Hoàn thành tốt bài tập, cần luyện đề thêm..."></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="strengths">Điểm mạnh</label>
+            <input type="text" id="strengths" name="strengths" placeholder="Ví dụ: Hiểu nhanh, chăm chỉ">
+        </div>
+        
+        <div class="form-group">
+            <label for="improvements">Cần cải thiện</label>
+            <input type="text" id="improvements" name="improvements" placeholder="Ví dụ: Tăng tốc độ làm bài, tham gia thảo luận">
+        </div>
+        
+        <button type="submit">Lưu dữ liệu</button>
+    </form>
+</div>
+
+<style>
+.data-entry-page {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    max-width: 720px;
+    margin: 2rem auto;
+}
+
+.data-entry-page h1 {
+    color: #4f46e5;
+    margin-bottom: 0.5rem;
+}
+
+.subtitle {
+    color: #6b7280;
+    margin-bottom: 1.5rem;
+}
+
+.data-entry-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.data-entry-form label {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.data-entry-form input,
+.data-entry-form select,
+.data-entry-form textarea {
+    width: 100%;
+    padding: 0.85rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.data-entry-form textarea {
+    resize: vertical;
+}
+
+.data-entry-form button {
+    width: 100%;
+    padding: 0.9rem;
+    border: none;
+    border-radius: 8px;
+    background: #4f46e5;
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease-in-out;
+}
+
+.data-entry-form button:hover {
+    background: #4338ca;
+}
+
+.two-col {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+}
+
+.alert {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.alert.success {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.alert.error {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+
+.required {
+    color: #dc2626;
+}
+</style>
+{% endblock %}
+

@@ -1,0 +1,29 @@
+{
+  "features": [
+    "grade_score",
+    "attendance_rate",
+    "homework_completion",
+    "semester",
+    "year",
+    "subject_name",
+    "category",
+    "credits",
+    "difficulty_level",
+    "prerequisites",
+    "major",
+    "career_path",
+    "learning_style",
+    "interests",
+    "goals",
+    "student_avg_grade",
+    "difficulty_numeric",
+    "completion_rate"
+  ],
+  "target": "ai_score",
+  "metrics": {
+    "train_r2": 0.9874447487021873,
+    "test_r2": 0.9814656436352072,
+    "test_mae": 0.01815148150821173,
+    "test_rmse": 0.02955383695477456
+  }
+}

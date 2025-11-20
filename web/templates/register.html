@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}Đăng ký - Nền tảng Học tập Cá nhân hóa{% endblock %}
+
+{% block content %}
+<div class="register-page">
+    <div class="register-container">
+        <h1>📝 Đăng ký tài khoản</h1>
+        
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+        
+        <form method="POST" class="register-form" id="registerForm">
+            <div class="form-group">
+                <label for="username">Tên đăng nhập: <span class="required">*</span></label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Mật khẩu: <span class="required">*</span></label>
+                <input type="password" id="password" name="password" required minlength="6">
+            </div>
+            
+            <div class="form-group">
+                <label for="confirm_password">Xác nhận mật khẩu: <span class="required">*</span></label>
+                <input type="password" id="confirm_password" name="confirm_password" required minlength="6">
+            </div>
+            
+            <div class="form-group">
+                <label for="role">Loại tài khoản: <span class="required">*</span></label>
+                <select id="role" name="role" required onchange="toggleStudentId()">
+                    <option value="">-- Chọn loại tài khoản --</option>
+                    <option value="student">Học sinh</option>
+                    <option value="parent">Phụ huynh</option>
+                </select>
+            </div>
+            
+            <div class="form-group" id="studentIdGroup" style="display: none;">
+                <label for="student_id" id="studentIdLabel">Mã học sinh: <span class="required">*</span></label>
+                <input type="text" id="student_id" name="student_id" placeholder="Nhập mã học sinh" autocomplete="off">
+                <small class="form-hint" id="studentIdHint">Vui lòng nhập mã học sinh theo hồ sơ trong hệ thống</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="full_name">Họ và tên:</label>
+                <input type="text" id="full_name" name="full_name">
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email">
+            </div>
+            
+            <button type="submit">Đăng ký</button>
+        </form>
+        
+        <div class="login-link">
+            <p>Đã có tài khoản? <a href="{{ url_for('login') }}">Đăng nhập ngay</a></p>
+        </div>
+    </div>
+</div>
+
+<style>
+.register-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+    padding: 2rem 0;
+}
+
+.register-container {
+    background: white;
+    padding: 3rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    max-width: 500px;
+    width: 100%;
+}
+
+.register-form {
+    margin-top: 2rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #333;
+}
+
+.required {
+    color: #dc3545;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+}
+
+.form-hint {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+button[type="submit"] {
+    width: 100%;
+    padding: 0.75rem;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 1rem;
+}
+
+button[type="submit"]:hover {
+    background: #0056b3;
+}
+
+.login-link {
+    margin-top: 1.5rem;
+    text-align: center;
+    padding-top: 1.5rem;
+    border-top: 1px solid #ddd;
+}
+
+.login-link a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.login-link a:hover {
+    text-decoration: underline;
+}
+
+.error {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 1rem;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+    border: 1px solid #f5c6cb;
+}
+</style>
+
+<script>
+function toggleStudentId() {
+    const role = document.getElementById('role').value;
+    const studentIdGroup = document.getElementById('studentIdGroup');
+    const studentIdInput = document.getElementById('student_id');
+    const studentIdLabel = document.getElementById('studentIdLabel');
+    const studentIdHint = document.getElementById('studentIdHint');
+    
+    if (role === 'student') {
+        studentIdGroup.style.display = 'block';
+        studentIdInput.required = false;
+        studentIdInput.placeholder = 'Để trống nếu muốn hệ thống tạo mã tự động';
+        studentIdLabel.innerHTML = 'Mã học sinh của bạn (có thể để trống):';
+        studentIdHint.textContent = 'Nếu để trống, hệ thống sẽ tạo mới (ví dụ: HS021) và sinh dữ liệu tự động.';
+    } else if (role === 'parent') {
+        studentIdGroup.style.display = 'block';
+        studentIdInput.required = true;
+        studentIdInput.placeholder = 'Nhập mã học sinh của con';
+        studentIdLabel.innerHTML = 'Mã học sinh của con: <span class="required">*</span>';
+        studentIdHint.textContent = 'Phụ huynh cần nhập đúng mã học sinh của con để truy cập dashboard';
+    } else {
+        studentIdGroup.style.display = 'none';
+        studentIdInput.required = false;
+        studentIdInput.value = '';
+    }
+}
+
+// Validate password match
+document.getElementById('registerForm').addEventListener('submit', function(e) {
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirm_password').value;
+    
+    if (password !== confirmPassword) {
+        e.preventDefault();
+        alert('Mật khẩu xác nhận không khớp!');
+        return false;
+    }
+});
+</script>
+{% endblock %}
+

@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - {{ student_id }}{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <h1>📊 Dashboard Học tập - {{ student_id }}</h1>
+    
+    {% if generated_student_id %}
+    <div class="alert success">
+        🎉 Hệ thống đã tạo mã học sinh <strong>{{ generated_student_id }}</strong> cho bạn và sinh dữ liệu demo. Bạn có thể nhập thêm điểm ở mục “Nhập dữ liệu”.
+    </div>
+    {% endif %}
+    
+    {% if profile %}
+    <div class="profile-section">
+        <h2>👤 Thông tin Học sinh</h2>
+        <div class="profile-card">
+            <p><strong>Họ tên:</strong> {{ profile.get('name', 'N/A') }}</p>
+            <p><strong>Ngành:</strong> {{ profile.get('major', 'N/A') }}</p>
+            <p><strong>Định hướng:</strong> {{ profile.get('career_path', 'N/A') }}</p>
+            <p><strong>Phong cách học:</strong> {{ profile.get('learning_style', 'N/A') }}</p>
+            {% if profile.get('interests') %}
+            <p><strong>Sở thích:</strong> {{ profile.get('interests', 'N/A') }}</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if stats %}
+    <div class="stats-section">
+        <h2>📈 Thống kê Tổng quan</h2>
+        <div class="stats-grid">
+            {% if stats.avg_ai_score %}
+            <div class="stat-card">
+                <h3>AI Score Trung bình</h3>
+                <p class="stat-value">{{ (stats.avg_ai_score * 100)|round(1) }}%</p>
+            </div>
+            {% endif %}
+            {% if stats.avg_grade %}
+            <div class="stat-card">
+                <h3>Điểm Trung bình</h3>
+                <p class="stat-value">{{ stats.avg_grade|round(2) }}</p>
+            </div>
+            {% endif %}
+            {% if stats.total_subjects %}
+            <div class="stat-card">
+                <h3>Tổng số Môn học</h3>
+                <p class="stat-value">{{ stats.total_subjects }}</p>
+            </div>
+            {% endif %}
+            {% if stats.max_ai_score %}
+            <div class="stat-card">
+                <h3>AI Score Cao nhất</h3>
+                <p class="stat-value">{{ (stats.max_ai_score * 100)|round(1) }}%</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if recommendations %}
+    <div class="recommendations-section">
+        <h2>🎯 Gợi ý Học tập</h2>
+        <div class="recommendations-grid">
+            {% for rec in recommendations[:10] %}
+            <div class="recommendation-card">
+                <h3>{{ rec.subject_name }}</h3>
+                <p class="subject-code">{{ rec.subject_code }}</p>
+                <div class="score-bar">
+                    <div class="score-fill" style="width: {{ rec.ai_score * 100 }}%"></div>
+                    <span class="score-text">{{ (rec.ai_score * 100)|round(1) }}%</span>
+                </div>
+                <p class="reason">{{ rec.reason }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if scores %}
+    <div class="scores-section">
+        <h2>📈 AI Scores theo Môn học</h2>
+        <table class="scores-table">
+            <thead>
+                <tr>
+                    <th>Mã môn</th>
+                    <th>Tên môn</th>
+                    <th>AI Score</th>
+                    <th>Đánh giá</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for score in scores|sort(attribute='ai_score', reverse=True) %}
+                <tr>
+                    <td>{{ score.get('subject_code', 'N/A') }}</td>
+                    <td>{{ score.get('subject_name', 'N/A') }}</td>
+                    <td>
+                        <span class="score-badge">{{ (score.get('ai_score', 0) * 100)|round(1) }}%</span>
+                    </td>
+                    <td>
+                        {% set score_val = score.get('ai_score', 0) %}
+                        {% if score_val >= 0.8 %}
+                            <span class="badge-excellent">Xuất sắc</span>
+                        {% elif score_val >= 0.6 %}
+                            <span class="badge-good">Tốt</span>
+                        {% elif score_val >= 0.4 %}
+                            <span class="badge-medium">Trung bình</span>
+                        {% else %}
+                            <span class="badge-low">Cần cải thiện</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    
+    {% if grades %}
+    <div class="grades-section">
+        <h2>📝 Điểm số Thực tế</h2>
+        <table class="scores-table">
+            <thead>
+                <tr>
+                    <th>Mã môn</th>
+                    <th>Điểm số</th>
+                    <th>Tỷ lệ tham gia</th>
+                    <th>Hoàn thành bài tập</th>
+                    <th>Học kỳ</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for grade in grades %}
+                <tr>
+                    <td>{{ grade.get('subject_code', 'N/A') }}</td>
+                    <td><strong>{{ grade.get('grade_score', 'N/A') }}</strong></td>
+                    <td>{{ (grade.get('attendance_rate', 0) * 100)|round(1) }}%</td>
+                    <td>{{ (grade.get('homework_completion', 0) * 100)|round(1) }}%</td>
+                    <td>{{ grade.get('semester', 'N/A') }} - {{ grade.get('year', 'N/A') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    
+    {% if not scores and not recommendations and not profile %}
+    <div class="no-data">
+        <p>⚠️ Chưa có dữ liệu cho học sinh này.</p>
+        <p>Vui lòng chạy pipeline để tạo dữ liệu hoặc kiểm tra lại mã học sinh.</p>
+        <a href="{{ url_for('manage') }}" class="btn">Đi đến trang Quản lý</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

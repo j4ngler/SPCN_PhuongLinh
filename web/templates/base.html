@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Nền tảng Học tập Cá nhân hóa{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <h1 class="logo">📚 Personalized Learning Platform</h1>
+            <ul class="nav-links">
+                <li><a href="{{ url_for('index') }}">Trang chủ</a></li>
+                {% if user %}
+                    {% if user.role == 'student' %}
+                        <li><a href="{{ url_for('student_dashboard') }}">Dashboard</a></li>
+                        <li><a href="{{ url_for('student_data_entry') }}">Nhập dữ liệu</a></li>
+                    {% elif user.role == 'parent' %}
+                        <li><a href="{{ url_for('parent_dashboard') }}">Dashboard</a></li>
+                    {% endif %}
+                    <li><a href="{{ url_for('manage') }}">Quản lý</a></li>
+                    <li><a href="{{ url_for('logout') }}">Đăng xuất</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('login') }}">Đăng nhập</a></li>
+                    <li><a href="{{ url_for('register') }}">Đăng ký</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Nền tảng Học tập Cá nhân hóa - SPCN Phương Linh</p>
+        </div>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
+

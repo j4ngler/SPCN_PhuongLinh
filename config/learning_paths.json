@@ -1,0 +1,31 @@
+{
+  "career_paths": {
+    "engineering": {
+      "recommended_subjects": ["Mathematics", "Physics", "Programming"],
+      "skills": ["Problem Solving", "Analytical Thinking", "Technical Writing"]
+    },
+    "business": {
+      "recommended_subjects": ["Economics", "Management", "Marketing"],
+      "skills": ["Communication", "Leadership", "Strategic Planning"]
+    },
+    "arts": {
+      "recommended_subjects": ["Literature", "History", "Design"],
+      "skills": ["Creativity", "Critical Thinking", "Presentation"]
+    }
+  },
+  "skill_levels": {
+    "beginner": {
+      "threshold": 0.0,
+      "recommendations": "Focus on fundamentals and basic concepts"
+    },
+    "intermediate": {
+      "threshold": 0.5,
+      "recommendations": "Practice advanced topics and applications"
+    },
+    "advanced": {
+      "threshold": 0.8,
+      "recommendations": "Explore specialized topics and research"
+    }
+  }
+}
+

@@ -1,0 +1,458 @@
+{% extends "base.html" %}
+
+{% block title %}Quản lý Hệ thống - Nền tảng Học tập Cá nhân hóa{% endblock %}
+
+{% block content %}
+<div class="manage-page">
+    <h1>⚙️ Quản lý Hệ thống</h1>
+    <p class="subtitle">Thực hiện các tác vụ xử lý dữ liệu và AI trực tiếp trên web</p>
+
+    <!-- Upload Files Section -->
+    <div class="section-card">
+        <h2>📤 Upload Dữ liệu</h2>
+        <p>Upload một hoặc nhiều file CSV vào thư mục data/input/ (subjects, grades, teacher_feedback, career_path, student_profile)</p>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <div class="upload-area">
+                <input type="file" id="csvFiles" name="files" accept=".csv" multiple required>
+                <label for="csvFiles" class="file-label">
+                    <span>Chọn file CSV</span>
+                </label>
+                <div id="selected-files" class="selected-files">Chưa chọn file</div>
+                <button type="submit" class="btn-primary">Upload</button>
+            </div>
+            <p class="upload-hint">Chấp nhận các file: subjects.csv, grades.csv, teacher_feedback.csv, career_path.csv, student_profile.csv</p>
+        </form>
+        <div id="uploadResult" class="result-box"></div>
+    </div>
+
+    <!-- Data Processing Section -->
+    <div class="section-card">
+        <h2>📥 Xử lý Dữ liệu</h2>
+        <p>Làm sạch và chuẩn hóa dữ liệu từ các file CSV</p>
+        <div class="action-buttons">
+            <button onclick="runTask('data-processor')" class="btn-action">
+                🔄 Chạy Xử lý Dữ liệu
+            </button>
+        </div>
+        <div id="data-processor-result" class="result-box"></div>
+    </div>
+
+    <!-- Feature Engineering Section -->
+    <div class="section-card">
+        <h2>🔧 Feature Engineering</h2>
+        <p>Mã hóa đặc trưng và chuẩn hóa dữ liệu cho mô hình AI</p>
+        <div class="action-buttons">
+            <button onclick="runTask('feature-engineering')" class="btn-action">
+                🔧 Chạy Feature Engineering
+            </button>
+        </div>
+        <div id="feature-engineering-result" class="result-box"></div>
+    </div>
+
+    <!-- AI Model Training Section -->
+    <div class="section-card">
+        <h2>🤖 Huấn luyện Mô hình AI</h2>
+        <p>Train RandomForestRegressor để tính AI Score</p>
+        <div class="action-buttons">
+            <button onclick="runTask('train-model')" class="btn-action">
+                🎯 Huấn luyện Mô hình
+            </button>
+        </div>
+        <div id="train-model-result" class="result-box"></div>
+    </div>
+
+    <!-- Generate Recommendations Section -->
+    <div class="section-card">
+        <h2>💡 Tạo Gợi ý</h2>
+        <p>Tạo gợi ý học tập cá nhân hóa cho tất cả học sinh</p>
+        <div class="action-buttons">
+            <button onclick="runTask('generate-recommendations')" class="btn-action">
+                ✨ Tạo Gợi ý
+            </button>
+        </div>
+        <div id="generate-recommendations-result" class="result-box"></div>
+    </div>
+
+    <!-- Full Pipeline Section -->
+    <div class="section-card highlight">
+        <h2>🚀 Pipeline Hoàn chỉnh</h2>
+        <p>Chạy toàn bộ quy trình: Xử lý dữ liệu → Feature Engineering → Huấn luyện → Tạo gợi ý</p>
+        <div class="action-buttons">
+            <button onclick="runTask('pipeline')" class="btn-primary btn-large">
+                ▶️ Chạy Pipeline Hoàn chỉnh
+            </button>
+        </div>
+        <div id="pipeline-result" class="result-box"></div>
+    </div>
+
+    <!-- Database Management Section -->
+    <div class="section-card">
+        <h2>💾 Quản lý Database</h2>
+        <p>Khởi tạo và quản lý cơ sở dữ liệu</p>
+        <div class="action-buttons">
+            <button onclick="runTask('init-database')" class="btn-action">
+                🗄️ Khởi tạo Database
+            </button>
+        </div>
+        <div id="init-database-result" class="result-box"></div>
+    </div>
+
+    <!-- Status Section -->
+    <div class="section-card">
+        <h2>📊 Trạng thái Hệ thống</h2>
+        <div id="system-status" class="status-grid">
+            <div class="status-item">
+                <span class="status-label">File Input:</span>
+                <span id="input-files-status" class="status-value">Đang kiểm tra...</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">File Output:</span>
+                <span id="output-files-status" class="status-value">Đang kiểm tra...</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Mô hình AI:</span>
+                <span id="model-status" class="status-value">Đang kiểm tra...</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Database:</span>
+                <span id="database-status" class="status-value">Đang kiểm tra...</span>
+            </div>
+        </div>
+        <button onclick="checkSystemStatus()" class="btn-secondary">🔄 Làm mới Trạng thái</button>
+    </div>
+</div>
+
+<style>
+.manage-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.manage-page h1 {
+    color: #667eea;
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+.subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 2rem;
+}
+
+.section-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+}
+
+.section-card.highlight {
+    border: 2px solid #667eea;
+    background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+}
+
+.section-card h2 {
+    color: #667eea;
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+}
+
+.section-card p {
+    color: #666;
+    margin-bottom: 1.5rem;
+}
+
+.upload-area {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.upload-area input[type="file"] {
+    display: none;
+}
+
+.file-label {
+    padding: 0.75rem 1.5rem;
+    background: #f0f0f0;
+    border: 2px dashed #667eea;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.file-label:hover {
+    background: #e0e0e0;
+    border-color: #5568d3;
+}
+
+.selected-files {
+    min-width: 200px;
+    padding: 0.5rem 0.75rem;
+    background: #f9f9f9;
+    border-radius: 5px;
+    color: #555;
+    font-size: 0.9rem;
+}
+
+.upload-hint {
+    margin-top: 0.75rem;
+    font-size: 0.85rem;
+    color: #777;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.btn-action, .btn-primary, .btn-secondary {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: bold;
+}
+
+.btn-action {
+    background: #667eea;
+    color: white;
+}
+
+.btn-action:hover {
+    background: #5568d3;
+    transform: translateY(-2px);
+}
+
+.btn-primary {
+    background: #667eea;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #5568d3;
+}
+
+.btn-large {
+    padding: 1rem 2rem;
+    font-size: 1.2rem;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+}
+
+.result-box {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    border-radius: 5px;
+    display: none;
+}
+
+.result-box.show {
+    display: block;
+}
+
+.result-box.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.result-box.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.result-box.info {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+.result-box pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+}
+
+.status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.status-item {
+    padding: 1rem;
+    background: #f9f9f9;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.status-label {
+    font-weight: bold;
+    color: #333;
+}
+
+.status-value {
+    color: #667eea;
+    font-weight: bold;
+}
+
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-left: 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+
+<script>
+// Run task function
+async function runTask(taskName) {
+    const resultBox = document.getElementById(taskName + '-result');
+    resultBox.className = 'result-box show info';
+    resultBox.innerHTML = '<div class="loading"></div> Đang xử lý...';
+    
+    try {
+        const response = await fetch(`/api/run/${taskName}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            resultBox.className = 'result-box show success';
+            resultBox.innerHTML = `<strong>✅ Thành công!</strong><pre>${data.message || data.output || 'Hoàn thành'}</pre>`;
+        } else {
+            resultBox.className = 'result-box show error';
+            resultBox.innerHTML = `<strong>❌ Lỗi:</strong><pre>${data.error || data.message || 'Có lỗi xảy ra'}</pre>`;
+            if (data.stderr) {
+                resultBox.innerHTML += `<pre>${data.stderr}</pre>`;
+            }
+        }
+    } catch (error) {
+        resultBox.className = 'result-box show error';
+        resultBox.innerHTML = `<strong>❌ Lỗi kết nối:</strong><pre>${error.message}</pre>`;
+    }
+    
+    // Refresh system status after task
+    setTimeout(checkSystemStatus, 1000);
+}
+
+// Update selected file list
+document.getElementById('csvFiles').addEventListener('change', (event) => {
+    const files = Array.from(event.target.files || []);
+    const display = document.getElementById('selected-files');
+    if (!files.length) {
+        display.textContent = 'Chưa chọn file';
+        return;
+    }
+    display.textContent = files.map(f => f.name).join(', ');
+});
+
+// Upload file
+document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const fileInput = document.getElementById('csvFiles');
+    const files = Array.from(fileInput.files || []);
+    const resultBox = document.getElementById('uploadResult');
+    
+    if (!files.length) {
+        resultBox.className = 'result-box show error';
+        resultBox.innerHTML = '<strong>❌ Vui lòng chọn ít nhất một file!</strong>';
+        return;
+    }
+    
+    const formData = new FormData();
+    files.forEach((file) => {
+        formData.append('files', file, file.name);
+    });
+    
+    resultBox.className = 'result-box show info';
+    resultBox.innerHTML = '<div class="loading"></div> Đang upload...';
+    
+    try {
+        const response = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            const uploaded = (data.saved_files || []).map(name => `• ${name}`).join('\n');
+            resultBox.className = 'result-box show success';
+            resultBox.innerHTML = `<strong>✅ Upload thành công!</strong><pre>${data.message}${uploaded ? '\n' + uploaded : ''}</pre>`;
+            fileInput.value = '';
+            document.getElementById('selected-files').textContent = 'Chưa chọn file';
+        } else {
+            resultBox.className = 'result-box show error';
+            resultBox.innerHTML = `<strong>❌ Lỗi:</strong><pre>${data.error || data.message}</pre>`;
+            if (data.details) {
+                resultBox.innerHTML += `<pre>${data.details}</pre>`;
+            }
+        }
+    } catch (error) {
+        resultBox.className = 'result-box show error';
+        resultBox.innerHTML = `<strong>❌ Lỗi kết nối:</strong><pre>${error.message}</pre>`;
+    }
+    
+    setTimeout(checkSystemStatus, 1000);
+});
+
+// Check system status
+async function checkSystemStatus() {
+    try {
+        const response = await fetch('/api/system-status');
+        const data = await response.json();
+        
+        document.getElementById('input-files-status').textContent = 
+            data.input_files ? `✅ ${data.input_files} file` : '❌ Chưa có file';
+        document.getElementById('output-files-status').textContent = 
+            data.output_files ? `✅ ${data.output_files} file` : '❌ Chưa có file';
+        document.getElementById('model-status').textContent = 
+            data.model_exists ? '✅ Đã có mô hình' : '❌ Chưa có mô hình';
+        document.getElementById('database-status').textContent = 
+            data.database_exists ? '✅ Đã khởi tạo' : '❌ Chưa khởi tạo';
+    } catch (error) {
+        console.error('Error checking status:', error);
+    }
+}
+
+// Check status on page load
+window.addEventListener('load', checkSystemStatus);
+</script>
+{% endblock %}
+
