@@ -920,7 +920,7 @@ def create_app() -> Flask:
 
 if __name__ == '__main__':
     app = create_app()
-    port = int(os.environ.get('PORT', 5000))
+    port = int(os.environ.get('PORT', 5001))
     print(f"🚀 Khởi động web app tại http://localhost:{port}")
     print(f"📊 Dashboard: http://localhost:{port}/dashboard/<student_id>")
     print(f"🔗 API Recommend: http://localhost:{port}/recommend")
