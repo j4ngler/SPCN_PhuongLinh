@@ -67,18 +67,13 @@ def _filter_latest_term(df: pd.DataFrame) -> pd.DataFrame:
     if tmp['year_int'].notna().sum() == 0 or tmp['sem_int'].notna().sum() == 0:
         return df
 
-    # Tìm year và semester lớn nhất cho từng học sinh
-    max_year = tmp.groupby('student_id')['year_int'].transform('max')
-    # Với mỗi học sinh, trong năm lớn nhất, lấy học kỳ lớn nhất
-    max_sem = (
-        tmp[tmp['year_int'] == max_year]
-        .groupby('student_id')['sem_int']
-        .transform('max')
-    )
+    # Sắp xếp theo student_id, năm, học kỳ rồi lấy bản ghi mới nhất cho mỗi học sinh
+    tmp_sorted = tmp.sort_values(['student_id', 'year_int', 'sem_int'])
+    latest_rows = tmp_sorted.groupby('student_id').tail(1)
 
-    mask = (tmp['year_int'] == max_year) & (tmp['sem_int'] == max_sem)
-    tmp = tmp[mask].drop(columns=['year_int', 'sem_int'])
-    return tmp
+    # Bỏ cột phụ và trả về
+    latest_rows = latest_rows.drop(columns=['year_int', 'sem_int'])
+    return latest_rows
 
 
 def calculate_ai_scores(student_id: Optional[str] = None) -> Optional[pd.DataFrame]:
