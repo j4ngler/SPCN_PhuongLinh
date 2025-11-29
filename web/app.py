@@ -7,12 +7,12 @@ Dashboard hiển thị kết quả học tập, biểu đồ năng lực, và g�
 import os
 import sys
 import random
+import webbrowser
+import threading
+import time
 from pathlib import Path
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session
-from werkzeug.security import generate_password_hash, check_password_hash
-from werkzeug.utils import secure_filename
 import pandas as pd
-import json
 import io
 import traceback
 import re
@@ -23,20 +23,19 @@ project_root = Path(__file__).parent.parent
 scripts_dir = project_root / 'scripts'
 sys.path.insert(0, str(scripts_dir))
 
-from ai_recommender import generate_recommendations, predict_ai_scores
-from database_manager import init_database, get_connection
+from ai_recommender import generate_recommendations, predict_ai_scores, process_all_students
+from database_manager import init_database
 from data_processor import process_all_data
 from feature_engineering import create_features
 from ai_model import train_model
-from ai_recommender import process_all_students
 from run_pipeline import run_full_pipeline
+from student_data_handler import process_new_student_data
 
 # Import auth module
 sys.path.insert(0, str(Path(__file__).parent))
 from auth import (
     init_auth_database, authenticate_user, login_user, logout_user,
-    get_current_user, require_role, is_student, is_parent,
-    get_student_id_for_user, USER_ROLES, create_user
+    get_current_user, create_user
 )
 
 
@@ -152,89 +151,6 @@ def generate_new_student_id(prefix: str = 'HS') -> str:
             except ValueError:
                 continue
     return f"{prefix}{max_num + 1:03d}"
-
-
-def save_manual_student_record(student_id: str, form_data: Dict[str, str], teacher_id: Optional[str] = None):
-    """Lưu dữ liệu thủ công do học sinh nhập"""
-    input_dir = project_root / 'data' / 'input'
-    output_dir = project_root / 'data' / 'output'
-    input_dir.mkdir(parents=True, exist_ok=True)
-    output_dir.mkdir(parents=True, exist_ok=True)
-    
-    subject_code = form_data.get('subject_code', '').strip()
-    if not subject_code:
-        raise ValueError('Vui lòng chọn mã môn học')
-    
-    subjects_df = _load_subjects_dataframe()
-    subject_row = subjects_df[subjects_df['subject_code'] == subject_code]
-    if subject_row.empty:
-        raise ValueError('Mã môn học không hợp lệ')
-    subject_name = subject_row.iloc[0].get('subject_name', subject_code)
-    
-    try:
-        grade_score = float(form_data.get('grade_score', 0))
-        attendance = float(form_data.get('attendance_rate', 0))
-        homework = float(form_data.get('homework_completion', 0))
-        semester = int(form_data.get('semester', 1))
-        year = int(form_data.get('year', 2024))
-    except ValueError:
-        raise ValueError('Vui lòng nhập đúng định dạng số')
-    
-    attendance_dec = attendance / 100 if attendance > 1 else attendance
-    homework_dec = homework / 100 if homework > 1 else homework
-    
-    grade_row = {
-        'student_id': student_id,
-        'subject_code': subject_code,
-        'grade_score': round(grade_score, 2),
-        'attendance_rate': round(attendance_dec, 2),
-        'homework_completion': round(homework_dec, 2),
-        'semester': semester,
-        'year': year
-    }
-    grade_df = pd.DataFrame([grade_row])
-    
-    _save_student_dataframe(input_dir / 'grades.csv', student_id, grade_df, replace=False, subset=['student_id', 'subject_code'])
-    _save_student_dataframe(output_dir / 'grades_cleaned.csv', student_id, grade_df, replace=False, subset=['student_id', 'subject_code'])
-    
-    comment = form_data.get('comment', '').strip()
-    strengths = form_data.get('strengths', '').strip()
-    improvements = form_data.get('improvements', '').strip()
-    if comment or strengths or improvements:
-        feedback_row = {
-            'student_id': student_id,
-            'subject_code': subject_code,
-            'teacher_id': teacher_id or 'MANUAL',
-            'comment': comment or 'Dữ liệu do học sinh nhập',
-            'strengths': strengths or 'Chủ động học tập',
-            'improvements': improvements or 'Tiếp tục luyện tập và đặt mục tiêu rõ ràng',
-            'semester': semester
-        }
-        feedback_df = pd.DataFrame([feedback_row])
-        _save_student_dataframe(input_dir / 'teacher_feedback.csv', student_id, feedback_df, replace=False, subset=['student_id', 'subject_code'])
-        _save_student_dataframe(output_dir / 'feedback_cleaned.csv', student_id, feedback_df, replace=False, subset=['student_id', 'subject_code'])
-    
-    ai_score = _simple_ai_score(grade_score, attendance_dec, homework_dec)
-    ai_score_row = {
-        'student_id': student_id,
-        'subject_code': subject_code,
-        'subject_name': subject_name,
-        'ai_score': ai_score
-    }
-    _save_student_dataframe(output_dir / 'ai_scores.csv', student_id, pd.DataFrame([ai_score_row]), replace=False, subset=['student_id', 'subject_code'])
-    
-    reason = f"Điểm số do bạn nhập (AI Score: {ai_score:.2f}). Môn học phù hợp với năng lực hiện tại."
-    recommendation_row = {
-        'student_id': student_id,
-        'subject_code': subject_code,
-        'subject_name': subject_name,
-        'ai_score': ai_score,
-        'priority': 1,
-        'reason': reason
-    }
-    _save_student_dataframe(output_dir / 'recommendations.csv', student_id, pd.DataFrame([recommendation_row]), replace=False, subset=['student_id', 'subject_code'])
-    
-    return ai_score
 
 
 def _create_synthetic_student_data(student_id: str, full_name: str = None):
@@ -551,8 +467,60 @@ def create_app() -> Flask:
         
         if request.method == 'POST':
             try:
-                ai_score = save_manual_student_record(user['user_id'], request.form)
-                message = f"Đã lưu dữ liệu cho môn {request.form.get('subject_code')} (AI Score ~ {ai_score:.2f})."
+                student_id = user['user_id']
+                
+                # Chuyển đổi form data thành dictionary
+                data = {
+                    'subject_code': request.form.get('subject_code', '').strip(),
+                    'grade_score': request.form.get('grade_score', '0'),
+                    'attendance_rate': request.form.get('attendance_rate', '95'),
+                    'homework_completion': request.form.get('homework_completion', '90'),
+                    'semester': request.form.get('semester', '1'),
+                    'year': request.form.get('year', '2024'),
+                    'comment': request.form.get('comment', '').strip(),
+                    'strengths': request.form.get('strengths', '').strip(),
+                    'improvements': request.form.get('improvements', '').strip(),
+                }
+                
+                # Thêm thông tin hồ sơ nếu có
+                if request.form.get('name'):
+                    data['name'] = request.form.get('name').strip()
+                if request.form.get('major'):
+                    data['major'] = request.form.get('major').strip()
+                if request.form.get('career_path'):
+                    data['career_path'] = request.form.get('career_path').strip()
+                if request.form.get('learning_style'):
+                    data['learning_style'] = request.form.get('learning_style').strip()
+                if request.form.get('interests'):
+                    data['interests'] = request.form.get('interests').strip()
+                if request.form.get('goals'):
+                    data['goals'] = request.form.get('goals').strip()
+                
+                # Validate dữ liệu
+                if not data['subject_code']:
+                    raise ValueError('Vui lòng chọn môn học')
+                
+                # Lưu dữ liệu và chạy pipeline (không train lại model để nhanh hơn)
+                success = process_new_student_data(
+                    student_id=student_id,
+                    data=data,
+                    auto_run_pipeline=True,
+                    run_full_pipeline=False  # Chỉ xử lý dữ liệu, không train lại model
+                )
+                
+                if success:
+                    # Tính AI Score đơn giản để hiển thị
+                    grade_score = float(data.get('grade_score', 0))
+                    attendance = float(data.get('attendance_rate', 95))
+                    homework = float(data.get('homework_completion', 90))
+                    attendance_dec = attendance / 100 if attendance > 1 else attendance
+                    homework_dec = homework / 100 if homework > 1 else homework
+                    ai_score = _simple_ai_score(grade_score, attendance_dec, homework_dec)
+                    
+                    message = f"✅ Đã lưu dữ liệu cho môn {data['subject_code']} (AI Score ~ {ai_score:.2f}). Hệ thống đã xử lý và cập nhật gợi ý học tập."
+                else:
+                    raise Exception('Không thể lưu dữ liệu')
+                    
             except ValueError as ve:
                 error = str(ve)
             except Exception as e:
@@ -953,8 +921,21 @@ def create_app() -> Flask:
 if __name__ == '__main__':
     app = create_app()
     port = int(os.environ.get('PORT', 5000))
-    print(f"🚀 Khởi động web app tại http://localhost:{port}")
-    print(f"📊 Dashboard: http://localhost:{port}/dashboard/<student_id>")
-    print(f"🔗 API Recommend: http://localhost:{port}/recommend")
+    url = f"http://localhost:{port}"
+    
+    print(f"🚀 Khởi động web app tại {url}")
+    print(f"📊 Dashboard: {url}/dashboard/<student_id>")
+    print(f"🔗 API Recommend: {url}/recommend")
+    print(f"🌐 Đang mở trình duyệt...")
+    
+    # Tự động mở trình duyệt sau 1.5 giây (đợi server khởi động)
+    def open_browser():
+        time.sleep(1.5)
+        webbrowser.open(url)
+    
+    browser_thread = threading.Thread(target=open_browser)
+    browser_thread.daemon = True
+    browser_thread.start()
+    
     app.run(debug=True, host='0.0.0.0', port=port)
 

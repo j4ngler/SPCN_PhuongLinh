@@ -76,18 +76,23 @@
 </div>
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+* { font-family: "Inter", sans-serif; }
+
 .data-entry-page {
-    background: white;
+    background: #fff;
     padding: 2.5rem;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    border-radius: 18px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.06);
     max-width: 720px;
     margin: 2rem auto;
 }
 
-.data-entry-page h1 {
-    color: #4f46e5;
-    margin-bottom: 0.5rem;
+h1 {
+    color: #4F46E5;
+    font-size: 1.8rem;
+    margin-bottom: .3rem;
 }
 
 .subtitle {
@@ -103,37 +108,47 @@
     font-weight: 600;
     display: block;
     margin-bottom: 0.5rem;
+    color: #374151;
 }
 
-.data-entry-form input,
-.data-entry-form select,
-.data-entry-form textarea {
+input, select, textarea {
     width: 100%;
     padding: 0.85rem;
     border: 1px solid #d1d5db;
-    border-radius: 8px;
+    border-radius: 10px;
     font-size: 1rem;
+    margin-top: .3rem;
+    box-sizing: border-box;
+    transition: 0.2s;
 }
 
-.data-entry-form textarea {
+input:focus, select:focus, textarea:focus {
+    border-color: #4F46E5;
+    box-shadow: 0 0 0 3px #c7d2fe;
+    outline: none;
+}
+
+textarea {
     resize: vertical;
 }
 
-.data-entry-form button {
+button {
     width: 100%;
-    padding: 0.9rem;
+    padding: 1rem;
+    margin-top: 1rem;
+    background: linear-gradient(135deg, #4F46E5, #6366F1);
     border: none;
-    border-radius: 8px;
-    background: #4f46e5;
+    border-radius: 10px;
     color: white;
-    font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s ease-in-out;
+    font-size: 1rem;
+    transition: 0.2s;
 }
 
-.data-entry-form button:hover {
-    background: #4338ca;
+button:hover {
+    transform: translateY(-2px);
+    opacity: 0.95;
 }
 
 .two-col {
@@ -148,16 +163,16 @@
     margin-bottom: 1.5rem;
 }
 
-.alert.success {
-    background: #ecfdf5;
+.alert.success { 
+    background: #ecfdf5; 
+    border: 1px solid #a7f3d0; 
     color: #065f46;
-    border: 1px solid #a7f3d0;
 }
 
-.alert.error {
-    background: #fef2f2;
+.alert.error { 
+    background: #fef2f2; 
+    border: 1px solid #fecaca; 
     color: #b91c1c;
-    border: 1px solid #fecaca;
 }
 
 .required {
