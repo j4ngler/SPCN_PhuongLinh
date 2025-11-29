@@ -921,8 +921,22 @@ def create_app() -> Flask:
 if __name__ == '__main__':
     app = create_app()
     port = int(os.environ.get('PORT', 5001))
-    print(f"🚀 Khởi động web app tại http://localhost:{port}")
-    print(f"📊 Dashboard: http://localhost:{port}/dashboard/<student_id>")
-    print(f"🔗 API Recommend: http://localhost:{port}/recommend")
+    base_url = f"http://localhost:{port}"
+
+    print(f"🚀 Khởi động web app tại {base_url}")
+    print(f"📊 Dashboard: {base_url}/dashboard/<student_id>")
+    print(f"🔗 API Recommend: {base_url}/recommend")
+
+    # Tự động mở trình duyệt sau khi server khởi động
+    def open_browser():
+        # Chờ một chút để Flask khởi động xong
+        time.sleep(1.5)
+        try:
+            webbrowser.open_new(base_url)
+        except Exception as e:
+            print(f"⚠️ Không thể tự mở trình duyệt: {e}")
+
+    threading.Thread(target=open_browser, daemon=True).start()
+
     app.run(debug=True, host='0.0.0.0', port=port)
 
