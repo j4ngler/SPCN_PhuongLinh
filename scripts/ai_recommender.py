@@ -71,7 +71,11 @@ def predict_ai_scores(student_id: Optional[str] = None):
 
 def generate_recommendations(student_id: str, top_n: int = 10) -> List[Dict]:
     """
-    Tạo gợi ý học tập cá nhân hóa cho một sinh viên
+    Tạo gợi ý học tập cá nhân hóa cho một sinh viên.
+    
+    Chiến lược hiện tại:
+    - Tập trung vào các môn có AI Score THẤP / CHƯA CAO
+      để học sinh ưu tiên cải thiện ở kỳ tiếp theo.
     """
     print(f"🎯 Tạo gợi ý học tập cho sinh viên: {student_id}")
     
@@ -80,7 +84,9 @@ def generate_recommendations(student_id: str, top_n: int = 10) -> List[Dict]:
     if scores_df is None or scores_df.empty:
         return []
     
-    # Lấy top N môn học có AI Score cao nhất
+    # Lấy các môn có AI Score thấp hơn để ưu tiên cải thiện
+    # Sắp xếp tăng dần theo ai_score và chọn top_n đầu tiên
+    scores_df = scores_df.sort_values('ai_score', ascending=True)
     top_subjects = scores_df.head(top_n)
     
     # Đọc hồ sơ sinh viên
@@ -97,13 +103,26 @@ def generate_recommendations(student_id: str, top_n: int = 10) -> List[Dict]:
     
     recommendations = []
     for idx, row in top_subjects.iterrows():
+        score_val = float(row['ai_score'])
+
+        # Phân loại mức độ để ghi lý do dễ hiểu hơn
+        if score_val < 0.4:
+            level_text = "còn khá thấp"
+        elif score_val < 0.7:
+            level_text = "ở mức trung bình, cần cải thiện thêm"
+        else:
+            level_text = "khá tốt nhưng vẫn có thể tối ưu"
+
         rec = {
             'student_id': row['student_id'],
             'subject_code': row['subject_code'],
             'subject_name': row['subject_name'],
-            'ai_score': float(row['ai_score']),
+            'ai_score': score_val,
             'priority': idx + 1,
-            'reason': f"Môn học phù hợp với năng lực (AI Score: {row['ai_score']:.2f})"
+            'reason': (
+                f"Môn nên ưu tiên cải thiện ở kỳ tiếp theo (AI Score: {score_val:.2f}, "
+                f"mức độ phù hợp hiện tại {level_text})"
+            )
         }
         
         # Thêm lý do dựa trên career path nếu có

@@ -47,12 +47,49 @@ def load_model():
     return model, feature_info
 
 
+def _filter_latest_term(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Lọc dữ liệu để chỉ giữ lại học kỳ gần nhất cho từng học sinh.
+    
+    Ý nghĩa: dùng kết quả học tập ở học kỳ mới nhất để gợi ý
+    cho *kỳ tiếp theo*.
+    """
+    if 'year' not in df.columns or 'semester' not in df.columns:
+        # Không có thông tin học kỳ/năm -> giữ nguyên
+        return df
+
+    tmp = df.copy()
+    # Chuyển về số để so sánh, lỗi thì để NaN
+    tmp['year_int'] = pd.to_numeric(tmp['year'], errors='coerce')
+    tmp['sem_int'] = pd.to_numeric(tmp['semester'], errors='coerce')
+
+    # Nếu toàn NaN thì không lọc, tránh làm rỗng dữ liệu
+    if tmp['year_int'].notna().sum() == 0 or tmp['sem_int'].notna().sum() == 0:
+        return df
+
+    # Tìm year và semester lớn nhất cho từng học sinh
+    max_year = tmp.groupby('student_id')['year_int'].transform('max')
+    # Với mỗi học sinh, trong năm lớn nhất, lấy học kỳ lớn nhất
+    max_sem = (
+        tmp[tmp['year_int'] == max_year]
+        .groupby('student_id')['sem_int']
+        .transform('max')
+    )
+
+    mask = (tmp['year_int'] == max_year) & (tmp['sem_int'] == max_sem)
+    tmp = tmp[mask].drop(columns=['year_int', 'sem_int'])
+    return tmp
+
+
 def calculate_ai_scores(student_id: Optional[str] = None) -> Optional[pd.DataFrame]:
     """
     Tính điểm phù hợp (AI Score) cho tất cả sinh viên hoặc một sinh viên cụ thể
+    Dữ liệu dùng để tính được lọc theo *học kỳ gần nhất* của từng học sinh
+    (hiểu là gợi ý cho kỳ tiếp theo).
     
     Returns:
         DataFrame với columns: student_id, subject_code, subject_name, ai_score
+        (nếu có) sẽ giữ thêm các cột year, semester để tham chiếu
     """
     # Tải mô hình
     model, feature_info = load_model()
@@ -67,14 +104,20 @@ def calculate_ai_scores(student_id: Optional[str] = None) -> Optional[pd.DataFra
         return None
     
     df = pd.read_csv(features_path)
-    
+
     # Lọc theo student_id nếu có
     if student_id:
         df = df[df['student_id'] == student_id]
         if df.empty:
             print(f"❌ Không tìm thấy sinh viên: {student_id}")
             return None
-    
+
+    # Lọc theo học kỳ gần nhất cho từng học sinh
+    df = _filter_latest_term(df)
+    if df.empty:
+        print("❌ Không còn dữ liệu sau khi lọc theo học kỳ gần nhất")
+        return None
+
     # Lấy các đặc trưng
     feature_cols = feature_info['features']
     X = df[feature_cols].fillna(0)
@@ -83,7 +126,14 @@ def calculate_ai_scores(student_id: Optional[str] = None) -> Optional[pd.DataFra
     predictions = model.predict(X)
     
     # Tạo DataFrame kết quả
-    result_df = df[['student_id', 'subject_code', 'subject_name']].copy()
+    base_cols = ['student_id', 'subject_code', 'subject_name']
+    # Giữ thêm year, semester nếu có để tham chiếu trên dashboard / phân tích
+    if 'year' in df.columns:
+        base_cols.append('year')
+    if 'semester' in df.columns:
+        base_cols.append('semester')
+
+    result_df = df[base_cols].copy()
     result_df['ai_score'] = predictions
     result_df['ai_score'] = result_df['ai_score'].clip(0, 1)  # Đảm bảo trong khoảng 0-1
     
