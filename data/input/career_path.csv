@@ -1,5 +1,5 @@
 career_path,description,required_skills,recommended_subjects
-engineering,Kỹ sư phần mềm,"Problem Solving","Programming,Mathematics,Physics"
+engineering,Kỹ sư phần mềm,"Problem Solving"
 engineering,Kỹ sư cơ khí,"Problem Solving","Mathematics,Physics,Engineering"
 engineering,Kỹ sư điện tử,"Problem Solving","Mathematics,Physics,Electronics"
 business,Phân tích kinh doanh,"Communication,Analysis","Economics,Management,Marketing"
@@ -10,4 +10,4 @@ arts,Nhiếp ảnh gia,"Creativity,Photography","History,Design"
 arts,Nhà văn,"Creativity,Writing","Literature,History"
 science,Nhà vật lý,"Problem Solving","Mathematics,Physics,Research"
 science,Nhà hóa học,"Problem Solving","Mathematics,Chemistry,Research"
-science,Nhà sinh học,"Problem Solving","Biology,Research,Analysis"
+science,Nhà sinh học,"Problem Solving","Biology,Analysis"
