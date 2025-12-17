@@ -90,7 +90,10 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-* { font-family: "Inter", sans-serif; }
+/* Giới hạn phạm vi style trong khu vực nhập dữ liệu, tránh ảnh hưởng navbar / trang khác */
+.data-entry-page, .data-entry-page * {
+    font-family: "Inter", sans-serif;
+}
 
 .data-entry-page {
     background: #fff;
@@ -101,7 +104,7 @@
     margin: 2rem auto;
 }
 
-h1 {
+.data-entry-page h1 {
     color: #4F46E5;
     font-size: 1.8rem;
     margin-bottom: .3rem;
@@ -123,7 +126,9 @@ h1 {
     color: #374151;
 }
 
-input, select, textarea {
+.data-entry-page input,
+.data-entry-page select,
+.data-entry-page textarea {
     width: 100%;
     padding: 0.85rem;
     border: 1px solid #d1d5db;
@@ -134,17 +139,19 @@ input, select, textarea {
     transition: 0.2s;
 }
 
-input:focus, select:focus, textarea:focus {
+.data-entry-page input:focus,
+.data-entry-page select:focus,
+.data-entry-page textarea:focus {
     border-color: #4F46E5;
     box-shadow: 0 0 0 3px #c7d2fe;
     outline: none;
 }
 
-textarea {
+.data-entry-page textarea {
     resize: vertical;
 }
 
-button {
+.data-entry-page button {
     width: 100%;
     padding: 1rem;
     margin-top: 1rem;
@@ -158,36 +165,36 @@ button {
     transition: 0.2s;
 }
 
-button:hover {
+.data-entry-page button:hover {
     transform: translateY(-2px);
     opacity: 0.95;
 }
 
-.two-col {
+.data-entry-page .two-col {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 1rem;
 }
 
-.alert {
+.data-entry-page .alert {
     padding: 1rem;
     border-radius: 8px;
     margin-bottom: 1.5rem;
 }
 
-.alert.success { 
+.data-entry-page .alert.success { 
     background: #ecfdf5; 
     border: 1px solid #a7f3d0; 
     color: #065f46;
 }
 
-.alert.error { 
+.data-entry-page .alert.error { 
     background: #fef2f2; 
     border: 1px solid #fecaca; 
     color: #b91c1c;
 }
 
-.required {
+.data-entry-page .required {
     color: #dc2626;
 }
 </style>

@@ -1,28 +1,16 @@
 subject_code,subject_name,category,credits,difficulty_level,prerequisites
-MATH101,Đại số cơ bản,Mathematics,3,Medium,
-MATH201,Giải tích,Mathematics,4,Hard,MATH101
-MATH301,Đại số tuyến tính,Mathematics,4,Hard,MATH201
-PHYS101,Vật lý đại cương,Physics,3,Hard,Mathematics
-PHYS201,Điện từ học,Physics,4,Hard,PHYS101
-PHYS301,Cơ học lượng tử,Physics,4,Very Hard,PHYS201
-CS101,Lập trình Python,Programming,4,Medium,
-CS201,Cấu trúc dữ liệu,Programming,4,Hard,CS101
-CS301,Thuật toán,Programming,4,Hard,CS201
-CS401,Trí tuệ nhân tạo,Programming,5,Very Hard,CS301
-ENG101,Tiếng Anh học thuật,Language,2,Easy,
-ENG201,Viết học thuật,Language,3,Medium,ENG101
-ENG301,Giao tiếp chuyên nghiệp,Language,3,Medium,ENG201
-CHEM101,Hóa học đại cương,Chemistry,3,Hard,Mathematics
-CHEM201,Hóa hữu cơ,Chemistry,4,Hard,CHEM101
-ECON101,Kinh tế học cơ bản,Economics,3,Medium,
-ECON201,Kinh tế vi mô,Economics,4,Hard,ECON101
-MGMT101,Quản lý cơ bản,Management,3,Medium,
-MKT101,Marketing cơ bản,Marketing,3,Medium,
-LIT101,Văn học Việt Nam,Literature,2,Easy,
-LIT201,Văn học thế giới,Literature,3,Medium,LIT101
-HIST101,Lịch sử Việt Nam,History,2,Easy,
-HIST201,Lịch sử thế giới,History,3,Medium,HIST101
-DES101,Thiết kế đồ họa,Design,3,Medium,
-DES201,Thiết kế UI/UX,Design,4,Hard,DES101
-BIO101,Sinh học cơ bản,Biology,3,Medium,
-BIO201,Di truyền học,Biology,4,Hard,BIO101
+TOAN,Toán học,Lõi,3,Medium,
+VAN,Ngữ văn,Lõi,3,Medium,
+ANH,Tiếng Anh,Lõi,3,Medium,
+LY,Vật lý,Tự nhiên,2,Medium,
+HOA,Hóa học,Tự nhiên,2,Medium,
+SINH,Sinh học,Tự nhiên,2,Medium,
+SU,Lịch sử,Xã hội,2,Medium,
+DIA,Địa lý,Xã hội,2,Medium,
+GDCD,Giáo dục công dân,Kỹ năng,1,Easy,
+TIN,Tin học,Công nghệ,2,Medium,
+CN,Công nghệ,Công nghệ,2,Medium,
+TD,Thể dục,Thể chất,1,Easy,
+QP,Giáo dục quốc phòng và an ninh,Thể chất,1,Easy,
+NHAC,Âm nhạc,Ngữ nghệ,1,Easy,
+MY,Mỹ thuật,Ngữ nghệ,1,Easy,

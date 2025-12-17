@@ -6,7 +6,6 @@ Dashboard hiển thị kết quả học tập, biểu đồ năng lực, và g�
 
 import os
 import sys
-import random
 import webbrowser
 import threading
 import time
@@ -15,274 +14,40 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for, s
 import pandas as pd
 import io
 import traceback
-import re
 from typing import List, Optional, Dict
+import re
 
 # Thêm thư mục scripts vào path
 project_root = Path(__file__).parent.parent
 scripts_dir = project_root / 'scripts'
 sys.path.insert(0, str(scripts_dir))
 
-from ai_recommender import generate_recommendations, predict_ai_scores, process_all_students
-from database_manager import init_database
-from data_processor import process_all_data
-from feature_engineering import create_features
-from ai_model import train_model
-from run_pipeline import run_full_pipeline
-from student_data_handler import process_new_student_data
+from ai_recommender import generate_recommendations, predict_ai_scores, process_all_students  # type: ignore
+from database_manager import init_database, get_connection  # type: ignore
+from data_processor import process_all_data  # type: ignore
+from feature_engineering import create_features  # type: ignore
+from ai_model import train_model  # type: ignore
+from run_pipeline import run_full_pipeline  # type: ignore
+from student_data_handler import process_new_student_data  # type: ignore
+from student_utils import (  # type: ignore
+    _load_subjects_dataframe,
+    _simple_ai_score,
+    generate_new_student_id,
+    initialize_student_data,
+    _get_subject_load_for_student,
+    _save_subject_load_for_student,
+)
 
 # Import auth module
 sys.path.insert(0, str(Path(__file__).parent))
 from auth import (
-    init_auth_database, authenticate_user, login_user, logout_user,
-    get_current_user, create_user
+    init_auth_database,
+    authenticate_user,
+    login_user,
+    logout_user,
+    get_current_user,
+    create_user,
 )
-
-
-def _load_subjects_dataframe() -> pd.DataFrame:
-    """Đọc danh sách môn học từ output hoặc input"""
-    paths = [
-        project_root / 'data' / 'output' / 'subjects_cleaned.csv',
-        project_root / 'data' / 'input' / 'subjects.csv'
-    ]
-    for path in paths:
-        if path.exists():
-            try:
-                return pd.read_csv(path)
-            except Exception:
-                return pd.DataFrame()
-    return pd.DataFrame()
-
-
-def _load_student_profile(student_id: str) -> dict:
-    """Tìm profile học sinh trong output hoặc input"""
-    paths = [
-        project_root / 'data' / 'output' / 'student_profiles_cleaned.csv',
-        project_root / 'data' / 'input' / 'student_profile.csv'
-    ]
-    for path in paths:
-        if path.exists():
-            try:
-                df = pd.read_csv(path)
-                match = df[df['student_id'] == student_id]
-                if not match.empty:
-                    return match.iloc[0].to_dict()
-            except Exception:
-                continue
-    return {}
-
-
-def _save_student_dataframe(path: Path, student_id: str, df_new: pd.DataFrame, replace: bool = True, subset: Optional[List[str]] = None):
-    """Ghi dữ liệu học sinh vào file CSV
-    
-    Args:
-        path: Đường dẫn file
-        student_id: Mã học sinh
-        df_new: DataFrame cần ghi
-        replace: True -> xoá toàn bộ dữ liệu cũ của học sinh trước khi ghi
-        subset: Nếu replace=False, dùng subset để loại bỏ trùng dòng (ví dụ ['student_id','subject_code'])
-    """
-    path.parent.mkdir(parents=True, exist_ok=True)
-    if path.exists():
-        try:
-            existing = pd.read_csv(path)
-            if replace and 'student_id' in existing.columns:
-                existing = existing[existing['student_id'] != student_id]
-            else:
-                df_new = pd.concat([existing, df_new], ignore_index=True)
-                if subset:
-                    df_new = df_new.drop_duplicates(subset=subset, keep='last')
-                    df_new = df_new.reset_index(drop=True)
-                df_new.to_csv(path, index=False, encoding='utf-8')
-                return
-        except Exception:
-            pass
-    df_new.to_csv(path, index=False, encoding='utf-8')
-
-
-def _save_student_input_data(student_id: str, synthetic_data: dict):
-    """Ghi dữ liệu của học sinh vào các file input"""
-    input_dir = project_root / 'data' / 'input'
-    input_dir.mkdir(parents=True, exist_ok=True)
-    
-    if synthetic_data.get('profile') is not None:
-        _save_student_dataframe(input_dir / 'student_profile.csv', student_id, synthetic_data['profile'])
-    
-    if synthetic_data.get('grades') is not None:
-        _save_student_dataframe(input_dir / 'grades.csv', student_id, synthetic_data['grades'])
-    
-    if synthetic_data.get('feedback') is not None:
-        _save_student_dataframe(input_dir / 'teacher_feedback.csv', student_id, synthetic_data['feedback'])
-
-
-def _simple_ai_score(grade: float, attendance: float, homework: float) -> float:
-    """Tính AI Score đơn giản từ điểm số và tỉ lệ"""
-    attendance = attendance if attendance <= 1 else attendance / 100
-    homework = homework if homework <= 1 else homework / 100
-    grade_norm = grade / 10
-    score = 0.5 * grade_norm + 0.25 * attendance + 0.25 * homework
-    return round(max(0.0, min(1.0, score)), 4)
-
-
-def generate_new_student_id(prefix: str = 'HS') -> str:
-    """Sinh mã học sinh mới chưa tồn tại"""
-    existing_ids = set()
-    
-    def collect_ids(path: Path):
-        if path.exists():
-            try:
-                df = pd.read_csv(path)
-                if 'student_id' in df.columns:
-                    existing_ids.update(df['student_id'].dropna().astype(str).tolist())
-            except Exception:
-                pass
-    
-    collect_ids(project_root / 'data' / 'input' / 'student_profile.csv')
-    collect_ids(project_root / 'data' / 'output' / 'student_profiles_cleaned.csv')
-    
-    pattern = re.compile(rf'{prefix}(\d+)', re.IGNORECASE)
-    max_num = 0
-    for sid in existing_ids:
-        match = pattern.fullmatch(str(sid))
-        if match:
-            try:
-                num = int(match.group(1))
-                max_num = max(max_num, num)
-            except ValueError:
-                continue
-    return f"{prefix}{max_num + 1:03d}"
-
-
-def _create_synthetic_student_data(student_id: str, full_name: str = None):
-    """Tạo dữ liệu giả lập cho học sinh mới"""
-    subjects_df = _load_subjects_dataframe()
-    if subjects_df.empty:
-        return None
-    
-    sample_subjects = subjects_df.sample(
-        n=min(6, len(subjects_df)),
-        random_state=random.randint(1, 1_000_000)
-    ).reset_index(drop=True)
-    
-    ai_scores = []
-    grades = []
-    recommendations = []
-    
-    feedback_rows = []
-    
-    for idx, subject in sample_subjects.iterrows():
-        ai_score = round(random.uniform(0.45, 0.9), 4)
-        ai_scores.append({
-            'student_id': student_id,
-            'subject_code': subject.get('subject_code', f'SUB{idx:03d}'),
-            'subject_name': subject.get('subject_name', 'Môn học'),
-            'ai_score': ai_score
-        })
-        
-        grade_score = round(random.uniform(7.0, 9.5), 1)
-        attendance = round(random.uniform(0.85, 0.98), 2)
-        homework = round(random.uniform(0.82, 0.97), 2)
-        semester = 1 if idx % 2 == 0 else 2
-        year = 2024 + (idx // 4)
-        grades.append({
-            'student_id': student_id,
-            'subject_code': subject.get('subject_code', f'SUB{idx:03d}'),
-            'grade_score': grade_score,
-            'attendance_rate': attendance,
-            'homework_completion': homework,
-            'semester': semester,
-            'year': year
-        })
-        
-        recommendations.append({
-            'student_id': student_id,
-            'subject_code': subject.get('subject_code', f'SUB{idx:03d}'),
-            'subject_name': subject.get('subject_name', 'Môn học'),
-            'ai_score': ai_score,
-            'priority': idx + 1,
-            'reason': f"Môn học phù hợp với năng lực (AI Score: {ai_score:.2f})"
-        })
-        
-        feedback_rows.append({
-            'student_id': student_id,
-            'subject_code': subject.get('subject_code', f'SUB{idx:03d}'),
-            'teacher_id': f'AUTO{idx+1:03d}',
-            'comment': 'Dữ liệu tự sinh cho học sinh mới',
-            'strengths': 'Năng lực tốt, thái độ tích cực',
-            'improvements': 'Tiếp tục luyện tập và ôn bài',
-            'semester': semester
-        })
-    feedback_df = pd.DataFrame(feedback_rows)
-    ai_scores_df = pd.DataFrame(ai_scores)
-    grades_df = pd.DataFrame(grades)
-    recs_df = pd.DataFrame(recommendations).sort_values(by='ai_score', ascending=False).head(10)
-    
-    profile = _load_student_profile(student_id)
-    if not profile:
-        sample_subject = sample_subjects.iloc[0] if not sample_subjects.empty else None
-        profile = {
-            'student_id': student_id,
-            'name': full_name or f'Học sinh {student_id}',
-            'major': sample_subject.get('category', 'General') if sample_subject is not None else 'General',
-            'career_path': 'engineering',
-            'learning_style': random.choice(['Visual', 'Auditory', 'Kinesthetic', 'Mixed']),
-            'interests': 'Công nghệ, học tập',
-            'goals': 'Cải thiện kết quả học tập'
-        }
-    
-    profile_df = pd.DataFrame([profile])
-    
-    return {
-        'ai_scores': ai_scores_df,
-        'grades': grades_df,
-        'recommendations': recs_df,
-        'feedback': feedback_df,
-        'profile': profile_df
-    }
-
-
-def initialize_student_data(student_id: str, full_name: str = None):
-    """
-    Đảm bảo học sinh mới đăng ký có dữ liệu hiển thị trên dashboard.
-    Ưu tiên dùng dữ liệu thật nếu đã có, nếu không sẽ tạo dữ liệu giả lập.
-    """
-    output_dir = project_root / 'data' / 'output'
-    output_dir.mkdir(parents=True, exist_ok=True)
-    
-    try:
-        scores_df = None
-        try:
-            scores_df = predict_ai_scores(student_id)
-        except Exception:
-            scores_df = None
-        
-        if scores_df is not None and not scores_df.empty:
-            _save_student_dataframe(output_dir / 'ai_scores.csv', student_id, scores_df)
-            recommendations = generate_recommendations(student_id, top_n=10)
-            if recommendations:
-                recs_df = pd.DataFrame(recommendations)
-                _save_student_dataframe(output_dir / 'recommendations.csv', student_id, recs_df)
-        else:
-            synthetic = _create_synthetic_student_data(student_id, full_name)
-            if synthetic:
-                _save_student_dataframe(output_dir / 'ai_scores.csv', student_id, synthetic['ai_scores'])
-                _save_student_dataframe(output_dir / 'recommendations.csv', student_id, synthetic['recommendations'])
-                _save_student_dataframe(output_dir / 'grades_cleaned.csv', student_id, synthetic['grades'])
-                _save_student_dataframe(output_dir / 'student_profiles_cleaned.csv', student_id, synthetic['profile'])
-                if synthetic.get('feedback') is not None:
-                    _save_student_dataframe(output_dir / 'feedback_cleaned.csv', student_id, synthetic['feedback'])
-                
-                _save_student_input_data(student_id, synthetic)
-                return
-        
-        # Nếu có profile thật, đảm bảo ghi ra output
-        profile = _load_student_profile(student_id)
-        if profile:
-            profile_df = pd.DataFrame([profile])
-            _save_student_dataframe(output_dir / 'student_profiles_cleaned.csv', student_id, profile_df)
-    except Exception:
-        # Không để lỗi đăng ký chỉ vì tạo dữ liệu thất bại
-        pass
 
 
 def create_app() -> Flask:
@@ -321,7 +86,52 @@ def create_app() -> Flask:
     def index():
         """Trang chủ"""
         user = get_current_user()
-        return render_template('index.html', user=user)
+        timetable_info = None
+        reminders: List[str] = []
+
+        # Nếu là học sinh, cố gắng lấy thời gian cập nhật TKB gần nhất + một vài lời nhắc đơn giản
+        if user and user.get('role') == 'student':
+            student_id = user['user_id']
+            # Lấy thông tin thời khóa biểu
+            try:
+                conn = get_connection()
+                cursor = conn.cursor()
+                cursor.execute(
+                    "SELECT last_updated FROM student_timetable_meta WHERE student_id = ?",
+                    (student_id,),
+                )
+                row = cursor.fetchone()
+                conn.close()
+                if row and row[0]:
+                    timetable_info = {
+                        'last_updated': row[0],
+                    }
+            except Exception:
+                timetable_info = None
+
+            # Lời nhắc dựa trên AI Score (nếu có)
+            try:
+                scores_df = predict_ai_scores(student_id)
+                if scores_df is not None and not scores_df.empty:
+                    low_count = int((scores_df['ai_score'] < 0.4).sum())
+                    mid_count = int(((scores_df['ai_score'] >= 0.4) & (scores_df['ai_score'] < 0.7)).sum())
+                    if low_count > 0:
+                        reminders.append(
+                            f"Có {low_count} môn đang ở mức CẦN CẢI THIỆN. Hãy tập trung nghe giảng hơn trong các tiết đó."
+                        )
+                    if mid_count > 0:
+                        reminders.append(
+                            f"Có {mid_count} môn ở mức TRUNG BÌNH. Bạn có thể đặt mục tiêu cải thiện trong tuần này."
+                        )
+            except Exception:
+                pass
+
+        return render_template(
+            'index.html',
+            user=user,
+            timetable_info=timetable_info,
+            reminders=reminders,
+        )
     
     @app.route('/login', methods=['GET', 'POST'])
     def login():
@@ -434,6 +244,130 @@ def create_app() -> Flask:
         
         student_id = user['user_id']
         return redirect(url_for('dashboard', student_id=student_id))
+
+    @app.route('/student/timetable', methods=['GET', 'POST'])
+    def student_timetable():
+        """Cho phép học sinh thiết lập 'môn học trong tuần' (TKB đơn giản theo số buổi/tuần)
+        
+        Người dùng có thể nhập MÃ MÔN hoặc TÊN MÔN:
+        - Nếu trùng mã/tên trong subjects.csv -> hệ thống tự map sang subject_code chuẩn
+        - Nếu không trùng -> lưu nguyên chuỗi nhập như một môn tự do (vẫn hiển thị ở TKB,
+          nhưng sẽ không ghép được với AI_Score hiện tại).
+        """
+        user = get_current_user()
+        if not user or user['role'] != 'student':
+            return redirect(url_for('login'))
+
+        student_id = user['user_id']
+        subjects_df = _load_subjects_dataframe()
+        all_subjects = []
+        if subjects_df is not None and not subjects_df.empty:
+            all_subjects = subjects_df[['subject_code', 'subject_name']].to_dict('records')
+
+        # Chuẩn bị index để map text nhập (mã hoặc tên môn) về subject_code chuẩn
+        def _norm_text(text: str) -> str:
+            return re.sub(r'\s+', ' ', str(text or '').strip()).lower()
+
+        code_index: Dict[str, Dict] = {}
+        name_index: Dict[str, Dict] = {}
+        for subj in all_subjects:
+            scode = str(subj.get('subject_code') or '').strip()
+            sname = str(subj.get('subject_name') or '').strip()
+            if scode:
+                code_index[_norm_text(scode)] = subj
+            if sname:
+                name_index[_norm_text(sname)] = subj
+
+        # Danh sách ngày và tiết (khung TKB: Thứ 2 - Thứ 7, tiết 1-5 buổi sáng, 6-10 buổi chiều)
+        days = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7']
+        day_keys = ['t2', 't3', 't4', 't5', 't6', 't7']
+        periods = list(range(1, 11))  # 1-5: sáng, 6-10: chiều
+
+        message = None
+        error = None
+
+        if request.method == 'POST':
+            try:
+                # Đếm số lần xuất hiện của từng mã môn trong khung TKB
+                from collections import Counter
+
+                subject_counter: Counter = Counter()
+
+                for d_idx, d_key in enumerate(day_keys):
+                    for period in periods:
+                        field_name = f"slot_{d_key}_{period}"
+                        code = (request.form.get(field_name, '') or '').strip()
+                        if not code:
+                            continue
+                        subject_counter[code] += 1
+
+                # Chuẩn bị dữ liệu lưu vào bảng student_subject_load
+                subjects_to_save: List[Dict] = []
+                
+                for code, count in subject_counter.items():
+                    raw_text = str(code or '').strip()
+                    norm = _norm_text(raw_text)
+
+                    resolved_code = None
+                    resolved_name = None
+
+                    # 1) Thử map theo mã môn
+                    subj = code_index.get(norm)
+                    if subj:
+                        resolved_code = subj.get('subject_code')
+                        resolved_name = subj.get('subject_name')
+                    else:
+                        # 2) Thử map theo tên môn
+                        subj = name_index.get(norm)
+                        if subj:
+                            resolved_code = subj.get('subject_code')
+                            resolved_name = subj.get('subject_name')
+
+                    # 3) Nếu không tìm thấy trong danh sách, coi đây là môn tự do
+                    if not resolved_code:
+                        resolved_code = raw_text    # dùng chính text làm "mã"
+                        resolved_name = raw_text    # và cũng là tên hiển thị
+
+                    subjects_to_save.append(
+                        {
+                            'subject_code': resolved_code,
+                            'subject_name': resolved_name,
+                            'lessons_per_week': int(count),
+                        }
+                    )
+
+                if not subjects_to_save:
+                    raise ValueError("Vui lòng nhập ít nhất 1 tiết học trong tuần (nhập mã môn vào các ô trong bảng)")
+
+                _save_subject_load_for_student(student_id, subjects_to_save)
+                message = "✅ Đã lưu thời khóa biểu đơn giản cho tuần của bạn."
+            except ValueError as ve:
+                error = str(ve)
+            except Exception as e:
+                error = f"Không thể lưu thời khóa biểu: {e}"
+
+        current_subject_load = _get_subject_load_for_student(student_id)
+
+        # Nếu chưa có cấu hình, gợi ý tối đa 5 môn đầu tiên từ danh sách môn học
+        if not current_subject_load and all_subjects:
+            for subj in all_subjects[:5]:
+                current_subject_load.append(
+                    {
+                        'subject_code': subj.get('subject_code', ''),
+                        'subject_name': subj.get('subject_name', ''),
+                        'lessons_per_week': 0,
+                    }
+                )
+
+        return render_template(
+            'timetable.html',
+            user=user,
+            student_id=student_id,
+            all_subjects=all_subjects,
+            subject_load=current_subject_load,
+            message=message,
+            error=error,
+        )
     
     @app.route('/parent/dashboard')
     def parent_dashboard():
@@ -576,6 +510,7 @@ def create_app() -> Flask:
     @app.route('/dashboard/<student_id>')
     def dashboard(student_id):
         """Dashboard hiển thị kết quả học tập và gợi ý"""
+        user = get_current_user()
         try:
             # Đọc trực tiếp từ file output nếu có
             output_dir = project_root / 'data' / 'output'
@@ -659,18 +594,40 @@ def create_app() -> Flask:
                 if grade_scores:
                     stats['avg_grade'] = sum(grade_scores) / len(grade_scores)
                     stats['total_grades'] = len(grade_scores)
+
+            # Lấy cấu hình môn học trong tuần của học sinh (TKB đơn giản)
+            weekly_subject_load = _get_subject_load_for_student(student_id)
+
+            # Ghép thêm AI Score vào từng môn trong tuần (nếu có)
+            ai_score_by_subject: Dict[str, float] = {}
+            if scores_data:
+                for row in scores_data:
+                    code = str(row.get('subject_code') or '').strip()
+                    if not code:
+                        continue
+                    try:
+                        score_val = float(row.get('ai_score', 0.0))
+                    except (TypeError, ValueError):
+                        score_val = 0.0
+                    ai_score_by_subject[code] = score_val
+
+            for item in weekly_subject_load:
+                code = str(item.get('subject_code') or '').strip()
+                item['ai_score'] = ai_score_by_subject.get(code)
             
             generated_student_id = session.pop('generated_student_id', None)
             
             return render_template(
                 'dashboard.html',
+                user=user,
                 student_id=student_id,
                 profile=profile,
                 scores=scores_data,
                 recommendations=recommendations,
                 grades=grades_data,
                 stats=stats,
-                generated_student_id=generated_student_id
+                generated_student_id=generated_student_id,
+                weekly_subject_load=weekly_subject_load,
             )
         except Exception as e:
             import traceback

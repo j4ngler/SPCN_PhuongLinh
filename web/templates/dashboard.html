@@ -58,6 +58,39 @@
         </div>
     </div>
     {% endif %}
+
+    {% if weekly_subject_load %}
+    <div class="stats-section">
+        <h2>📅 Tuần này của bạn (trong trường)</h2>
+        <p class="small-text">
+            Dựa trên số buổi/tuần cho từng môn và AI Score hiện tại,
+            hệ thống gợi ý mức độ ưu tiên tập trung trên lớp.
+        </p>
+        <div class="stats-grid">
+            {% for item in weekly_subject_load %}
+            <div class="stat-card">
+                <h3>{{ item.subject_name or item.subject_code }}</h3>
+                <p class="stat-value">{{ item.lessons_per_week }} buổi/tuần</p>
+                {% if item.ai_score is not none %}
+                    {% set score_val = item.ai_score %}
+                    <p>
+                        AI Score: {{ (score_val * 100)|round(1) }}%
+                        {% if score_val < 0.4 %}
+                            <span class="badge-low">Đang vất vả - cần tập trung</span>
+                        {% elif score_val < 0.7 %}
+                            <span class="badge-medium">Trung bình - nên chú ý hơn</span>
+                        {% else %}
+                            <span class="badge-good">Khá ổn - tiếp tục duy trì</span>
+                        {% endif %}
+                    </p>
+                {% else %}
+                    <p class="small-text">Chưa có AI Score cho môn này</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
     
     {% if recommendations %}
     <div class="recommendations-section">

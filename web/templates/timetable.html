@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Thời khóa biểu - Tuần này của bạn{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <h1>📅 Thời khóa biểu - Tuần này của bạn</h1>
+
+    <p class="subtitle">
+        Nhập thời khóa biểu trong tuần (trong trường). Mỗi ô tương ứng với 1 tiết học.
+        Bạn có thể nhập <strong>mã môn</strong> (VD: TOAN, VAN, ANH) <em>hoặc</em> <strong>tên môn</strong> (VD: Toán, Vật lý).
+        Hệ thống sẽ tự cố gắng khớp với danh sách môn học, nếu không khớp sẽ coi đó là môn tự do.
+    </p>
+
+    {% if message %}
+    <div class="alert success">{{ message }}</div>
+    {% endif %}
+
+    {% if error %}
+    <div class="alert error">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" class="card">
+        <h2>📝 Nhập thời khóa biểu</h2>
+        <p class="small-text">
+            Mỗi bảng tương ứng với một buổi học. Hàng ngang là <strong>tiết học</strong>, cột dọc là <strong>Thứ 2 → Thứ 7</strong>.
+            Hệ thống sẽ tự động đếm tổng số buổi/tuần cho từng môn dựa trên cả hai bảng.
+        </p>
+
+        <div class="timetable-table-wrapper">
+            <h3>☀️ Buổi sáng (Tiết 1 → 5)</h3>
+            <table class="timetable-table">
+                <thead>
+                    <tr>
+                        <th>Tiết \ Thứ</th>
+                        <th>Thứ 2</th>
+                        <th>Thứ 3</th>
+                        <th>Thứ 4</th>
+                        <th>Thứ 5</th>
+                        <th>Thứ 6</th>
+                        <th>Thứ 7</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for period in [1, 2, 3, 4, 5] %}
+                    <tr>
+                        <td class="period-col">Tiết {{ period }}</td>
+                        {% for d_key in ['t2','t3','t4','t5','t6','t7'] %}
+                        <td>
+                            <input
+                                type="text"
+                                name="slot_{{ d_key }}_{{ period }}"
+                                placeholder="Mã môn"
+                                list="subjects_list"
+                            >
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="timetable-table-wrapper" style="margin-top: 2rem;">
+            <h3>🌙 Buổi chiều (Tiết 6 → 10)</h3>
+            <table class="timetable-table">
+                <thead>
+                    <tr>
+                        <th>Tiết \ Thứ</th>
+                        <th>Thứ 2</th>
+                        <th>Thứ 3</th>
+                        <th>Thứ 4</th>
+                        <th>Thứ 5</th>
+                        <th>Thứ 6</th>
+                        <th>Thứ 7</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for period in [6, 7, 8, 9, 10] %}
+                    <tr>
+                        <td class="period-col">Tiết {{ period }}</td>
+                        {% for d_key in ['t2','t3','t4','t5','t6','t7'] %}
+                        <td>
+                            <input
+                                type="text"
+                                name="slot_{{ d_key }}_{{ period }}"
+                                placeholder="Mã môn"
+                                list="subjects_list"
+                            >
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if all_subjects %}
+        <datalist id="subjects_list">
+            {% for subj in all_subjects %}
+            <option value="{{ subj.subject_code }}">{{ subj.subject_name }}</option>
+            {% endfor %}
+        </datalist>
+        {% endif %}
+
+        <div class="form-actions">
+            <button type="submit" class="btn primary">Lưu thời khóa biểu tuần</button>
+        </div>
+    </form>
+
+    <p class="small-text">
+        Sau khi lưu, hãy quay lại Dashboard để xem phần phân tích kết hợp giữa AI Score và
+        <strong>số buổi/tuần</strong> cho từng môn (dựa trên thời khóa biểu bạn vừa nhập).
+    </p>
+</div>
+{% endblock %}
+
+

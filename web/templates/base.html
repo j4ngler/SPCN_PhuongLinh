@@ -17,14 +17,27 @@
                     {% if user.role == 'student' %}
                         <li><a href="{{ url_for('student_dashboard') }}">Dashboard</a></li>
                         <li><a href="{{ url_for('student_data_entry') }}">Nhập dữ liệu</a></li>
+                        <li><a href="{{ url_for('student_timetable') }}">Thời khóa biểu</a></li>
                     {% elif user.role == 'parent' %}
                         <li><a href="{{ url_for('parent_dashboard') }}">Dashboard</a></li>
                     {% endif %}
                     <li><a href="{{ url_for('manage') }}">Quản lý</a></li>
-                    <li><a href="{{ url_for('logout') }}">Đăng xuất</a></li>
+                    <li>
+                        <a href="{{ url_for('logout') }}" class="nav-link-btn nav-logout">
+                            🚪 Đăng xuất
+                        </a>
+                    </li>
                 {% else %}
-                    <li><a href="{{ url_for('login') }}">Đăng nhập</a></li>
-                    <li><a href="{{ url_for('register') }}">Đăng ký</a></li>
+                    <li>
+                        <a href="{{ url_for('login') }}" class="nav-link-btn nav-login">
+                            🔑 Đăng nhập
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('register') }}" class="nav-link-btn nav-register">
+                            📝 Đăng ký
+                        </a>
+                    </li>
                 {% endif %}
             </ul>
         </div>

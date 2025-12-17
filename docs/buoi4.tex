@@ -1,0 +1,76 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[vietnamese]{babel}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{geometry}
+\geometry{margin=2.5cm}
+
+\title{Giáo án Buổi 4 (thực hành) \\ \small Nền tảng Học tập Cá nhân hóa}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section*{Mục tiêu (buổi thực hành)}
+\begin{itemize}[leftmargin=1.2cm]
+    \item Tập trung thực hành end-to-end, giảm lý thuyết (buổi 3 đã nhiều lý thuyết).
+    \item Vận hành pipeline: nạp dữ liệu, làm sạch, sinh đặc trưng, dự đoán AI\_Score, sinh gợi ý.
+    \item Rèn kỹ năng xử lý lỗi thực tế: CSV sai cột, thiếu year/semester, lỗi pandas, lỗi gợi ý.
+    \item Kiểm tra và chỉnh sửa giao diện: nhập dữ liệu mới, chạy gợi ý, đọc log và sửa lỗi hiển thị.
+\end{itemize}
+
+\section*{Nội dung chi tiết (120 phút, thiên về thực hành)}
+\subsection*{1) Khởi động ngắn (5')}
+\begin{itemize}[leftmargin=1.2cm]
+    \item Nhắc nhanh pipeline và checklist kiểm thử (input $\rightarrow$ clean $\rightarrow$ features $\rightarrow$ predict $\rightarrow$ gợi ý).
+    \item Chia nhóm, giao bộ CSV mẫu và nhiệm vụ thực hành.
+\end{itemize}
+
+\subsection*{2) Lý thuyết tối giản (10')}
+\begin{itemize}[leftmargin=1.2cm]
+    \item Nhắc tiêu chí AI\_Score (clip 0--1, dùng học kỳ mới nhất) và gợi ý ưu tiên môn điểm thấp.
+    \item Quy tắc dữ liệu sạch: cột bắt buộc, mã môn thống nhất, year/semester không trống.
+\end{itemize}
+
+\subsection*{3) Demo End-to-End nhanh (15')}
+\begin{itemize}[leftmargin=1.2cm]
+    \item Kiểm tra input (CSV, encoding, delimiter, cột bắt buộc).
+    \item Chạy pipeline: xử lý dữ liệu $\rightarrow$ features $\rightarrow$ predict AI\_Score $\rightarrow$ tạo gợi ý.
+    \item Mở dashboard, nhấn ``Tạo gợi ý'', kiểm tra file output (\texttt{ai\_scores.csv}, \texttt{recommendations.csv}) và giao diện.
+\end{itemize}
+
+\subsection*{4) Thực hành chính (60')}
+\begin{itemize}[leftmargin=1.2cm]
+    \item Bài 1: Thêm 1 học sinh mới (profile + điểm + feedback) vào CSV; chạy pipeline; xem AI\_Score + gợi ý trên dashboard.
+    \item Bài 2: Cố tình làm sai CSV (thiếu/thừa cột hoặc sai mã môn) $\rightarrow$ chạy pipeline $\rightarrow$ đọc traceback/log $\rightarrow$ sửa đúng.
+    \item Bài 3: Điều chỉnh điểm một môn để AI\_Score tăng/giảm, chạy lại và quan sát gợi ý thay đổi.
+    \item Bài 4: Bỏ \texttt{year/semester} để thấy dữ liệu bị lọc hết; thêm lại để phục hồi.
+    \item Bài 5 (nhanh): Kiểm tra \texttt{career\_path} nếu có — thêm 1 giá trị hợp lệ, chạy lại, xem lý do gợi ý có đổi không.
+\end{itemize}
+
+\subsection*{5) Phân tích \& Thảo luận (15')}
+\begin{itemize}[leftmargin=1.2cm]
+    \item Khi nào nên ưu tiên môn AI\_Score thấp? Khi nào giữ môn trung bình để duy trì?
+    \item Cách điền mặc định nếu thiếu year/semester; rủi ro lọc sai kỳ.
+    \item Gợi ý cải tiến: trọng số môn chuyên ngành, ngưỡng động theo từng học sinh, giải thích gợi ý rõ hơn.
+\end{itemize}
+
+\subsection*{6) Tổng kết \& Bài tập về nhà (15')}
+\begin{itemize}[leftmargin=1.2cm]
+    \item Checklist: dữ liệu sạch, pipeline chạy, AI\_Score sinh ra, gợi ý hiển thị, không lỗi pandas/CSV, dashboard ổn.
+    \item Bài tập: nhập thêm 3--5 học sinh, chạy pipeline, chụp màn hình dashboard + gợi ý, ghi lại lỗi (nếu có) và cách xử lý.
+    \item Chuẩn bị buổi sau: thử điều chỉnh feature/mô hình hoặc bổ sung logic gợi ý theo \texttt{career\_path}.
+\end{itemize}
+
+\section*{Tài liệu \& Chuẩn bị}
+\begin{itemize}[leftmargin=1.2cm]
+    \item Máy đã cài môi trường dự án (Python, venv, pandas, Flask), có thể chạy pipeline và web.
+    \item Bộ CSV mẫu (input) và file output mẫu để đối chiếu.
+    \item Slide ngắn: AI\_Score, pipeline, lỗi thường gặp; sơ đồ luồng dữ liệu.
+    \item Checklist thao tác: nhập dữ liệu $\rightarrow$ chạy pipeline $\rightarrow$ kiểm tra output $\rightarrow$ mở web $\rightarrow$ tạo gợi ý $\rightarrow$ xem log khi lỗi.
+\end{itemize}
+
+\end{document}
+

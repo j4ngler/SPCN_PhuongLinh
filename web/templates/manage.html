@@ -125,7 +125,10 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-* { font-family: "Inter", sans-serif; }
+/* Giới hạn style trong khu vực quản lý, tránh ảnh hưởng navbar / trang khác */
+.manage-page, .manage-page * {
+    font-family: "Inter", sans-serif;
+}
 
 .manage-page {
     max-width: 1200px;
@@ -140,14 +143,14 @@
     margin-bottom: .5rem;
 }
 
-.subtitle {
+.manage-page .subtitle {
     text-align: center;
     color: #6b7280;
     margin-bottom: 2rem;
     font-size: 1.1rem;
 }
 
-.section-card {
+.manage-page .section-card {
     background: white;
     padding: 2rem;
     border-radius: 18px;
@@ -155,34 +158,34 @@
     margin-bottom: 2rem;
 }
 
-.section-card.highlight {
+.manage-page .section-card.highlight {
     border: 2px solid #4F46E5;
     background: #eef2ff;
 }
 
-.section-card h2 {
+.manage-page .section-card h2 {
     font-size: 1.5rem;
     color: #4F46E5;
     margin-bottom: 0.5rem;
 }
 
-.section-card p {
+.manage-page .section-card p {
     color: #6b7280;
     margin-bottom: 1.5rem;
 }
 
-.upload-area {
+.manage-page .upload-area {
     display: flex;
     gap: 1rem;
     align-items: center;
     flex-wrap: wrap;
 }
 
-.upload-area input[type="file"] {
+.manage-page .upload-area input[type="file"] {
     display: none;
 }
 
-.file-label {
+.manage-page .file-label {
     padding: 0.75rem 1.5rem;
     background: #f0f0f0;
     border: 2px dashed #4F46E5;
@@ -191,12 +194,12 @@
     transition: all 0.3s;
 }
 
-.file-label:hover {
+.manage-page .file-label:hover {
     background: #e0e0e0;
     border-color: #4338ca;
 }
 
-.selected-files {
+.manage-page .selected-files {
     min-width: 200px;
     padding: 0.5rem 0.75rem;
     background: #f9fafb;
@@ -205,19 +208,21 @@
     font-size: 0.9rem;
 }
 
-.upload-hint {
+.manage-page .upload-hint {
     margin-top: 0.75rem;
     font-size: 0.85rem;
     color: #6b7280;
 }
 
-.action-buttons {
+.manage-page .action-buttons {
     display: flex;
     gap: 1rem;
     flex-wrap: wrap;
 }
 
-.btn-primary, .btn-action, .btn-secondary {
+.manage-page .btn-primary,
+.manage-page .btn-action,
+.manage-page .btn-secondary {
     background: linear-gradient(135deg, #4F46E5, #6366F1);
     color: #fff;
     border: none;
@@ -229,55 +234,56 @@
     font-size: 1rem;
 }
 
-.btn-primary:hover, .btn-action:hover {
+.manage-page .btn-primary:hover,
+.manage-page .btn-action:hover {
     transform: translateY(-2px);
     opacity: 0.95;
 }
 
-.btn-large {
+.manage-page .btn-large {
     padding: 1rem 2rem;
     font-size: 1.2rem;
 }
 
-.btn-secondary {
+.manage-page .btn-secondary {
     background: #6b7280;
 }
 
-.btn-secondary:hover {
+.manage-page .btn-secondary:hover {
     background: #4b5563;
     transform: translateY(-2px);
 }
 
-.result-box {
+.manage-page .result-box {
     margin-top: 1.2rem;
     padding: 1rem;
     border-radius: 10px;
     display: none;
 }
 
-.result-box.show {
+.manage-page .result-box.show {
     display: block;
 }
 
-.result-box.success { 
+.manage-page .result-box.success { 
     background: #ecfdf5; 
     color: #065f46; 
     border: 1px solid #a7f3d0;
 }
 
-.result-box.error { 
+.manage-page .result-box.error { 
     background: #fef2f2; 
     color: #b91c1c; 
     border: 1px solid #fecaca;
 }
 
-.result-box.info { 
+.manage-page .result-box.info { 
     background: #dbeafe; 
     color: #1e3a8a; 
     border: 1px solid #93c5fd;
 }
 
-.result-box pre {
+.manage-page .result-box pre {
     margin: 0.5rem 0 0 0;
     white-space: pre-wrap;
     word-wrap: break-word;
@@ -285,14 +291,14 @@
     font-size: 0.9rem;
 }
 
-.status-grid {
+.manage-page .status-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 1rem;
     margin-bottom: 1rem;
 }
 
-.status-item {
+.manage-page .status-item {
     padding: 1rem;
     background: #f9fafb;
     border-radius: 10px;
@@ -301,17 +307,17 @@
     align-items: center;
 }
 
-.status-label {
+.manage-page .status-label {
     font-weight: 600;
     color: #374151;
 }
 
-.status-value {
+.manage-page .status-value {
     color: #4F46E5;
     font-weight: 600;
 }
 
-.loading {
+.manage-page .loading {
     display: inline-block;
     width: 20px;
     height: 20px;

@@ -33,7 +33,7 @@ def init_database():
     db_path = get_db_path()
     conn = sqlite3.connect(str(db_path))
     cursor = conn.cursor()
-    
+
     # Bảng subjects: Thông tin môn học
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS subjects (
@@ -118,6 +118,27 @@ def init_database():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (student_id) REFERENCES student_profiles(student_id),
             FOREIGN KEY (subject_id) REFERENCES subjects(subject_id)
+        )
+    ''')
+
+    # Bảng student_timetable_meta: Lưu thời điểm cập nhật TKB gần nhất của từng học sinh
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS student_timetable_meta (
+            student_id TEXT PRIMARY KEY,
+            last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (student_id) REFERENCES student_profiles(student_id)
+        )
+    ''')
+
+    # Bảng student_subject_load: Cấu hình số buổi/tuần cho từng môn (thời khóa biểu đơn giản)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS student_subject_load (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            student_id TEXT NOT NULL,
+            subject_code TEXT NOT NULL,
+            subject_name TEXT,
+            lessons_per_week INTEGER DEFAULT 0,
+            FOREIGN KEY (student_id) REFERENCES student_profiles(student_id)
         )
     ''')
     

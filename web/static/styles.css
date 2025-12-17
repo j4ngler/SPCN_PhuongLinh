@@ -49,6 +49,39 @@ body {
     transition: opacity 0.3s;
 }
 
+.nav-link-btn {
+    padding: 0.35rem 1.1rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.12);
+    font-weight: 500;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.nav-link-btn.nav-register {
+    background: #ffffff;
+    color: #4f46e5;
+    border-color: #ffffff;
+}
+
+.nav-link-btn.nav-logout {
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.8);
+}
+
+.nav-link-btn:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.24);
+}
+
+.nav-link-btn.nav-register:hover {
+    background: #f3f4ff;
+}
+
 .nav-links a:hover {
     opacity: 0.8;
 }
