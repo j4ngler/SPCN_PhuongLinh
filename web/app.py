@@ -88,40 +88,70 @@ def create_app() -> Flask:
         """Trang chủ"""
         user = get_current_user()
         timetable_info = None
-        weekly_subject_load: List[Dict] = []
         reminders: List[str] = []
 
         # Nếu là học sinh, cố gắng lấy thời gian cập nhật TKB gần nhất + một vài lời nhắc đơn giản
         if user and user.get('role') == 'student':
             student_id = user['user_id']
-            # Lấy thông tin thời khóa biểu (thời gian cập nhật)
-            timetable_info = _get_timetable_meta_for_student(student_id)
-            
-            # Lấy danh sách môn học trong tuần (thời khóa biểu mới nhất)
-            weekly_subject_load = _get_subject_load_for_student(student_id)
-
-            # Lời nhắc dựa trên AI Score (nếu có)
+            # Lấy thông tin thời khóa biểu
             try:
-                scores_df = predict_ai_scores(student_id)
-                if scores_df is not None and not scores_df.empty:
-                    low_count = int((scores_df['ai_score'] < 0.4).sum())
-                    mid_count = int(((scores_df['ai_score'] >= 0.4) & (scores_df['ai_score'] < 0.7)).sum())
-                    if low_count > 0:
-                        reminders.append(
-                            f"Có {low_count} môn đang ở mức CẦN CẢI THIỆN. Hãy tập trung nghe giảng hơn trong các tiết đó."
-                        )
-                    if mid_count > 0:
-                        reminders.append(
-                            f"Có {mid_count} môn ở mức TRUNG BÌNH. Bạn có thể đặt mục tiêu cải thiện trong tuần này."
-                        )
+                conn = get_connection()
+                cursor = conn.cursor()
+                cursor.execute(
+                    "SELECT last_updated FROM student_timetable_meta WHERE student_id = ?",
+                    (student_id,),
+                )
+                row = cursor.fetchone()
+                conn.close()
+                if row and row[0]:
+                    timetable_info = {
+                        'last_updated': row[0],
+                    }
             except Exception:
-                pass
+                timetable_info = None
+
+        # ===== ADD: LẤY THỜI KHÓA BIỂU CHI TIẾT =====
+        try:
+            conn = get_connection()
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT day_of_week, period, subject_name
+                FROM student_timetable
+                WHERE student_id = ?
+            """, (student_id,))
+            rows = cursor.fetchall()
+            conn.close()
+
+            timetable = {}
+            for day, period, subject in rows:
+                if period not in timetable:
+                    timetable[period] = {}
+                timetable[period][day] = subject
+
+        except Exception:
+            timetable = None
+
+        # ===== LỜI NHẮC DỰA TRÊN AI SCORE =====
+        try:
+            scores_df = predict_ai_scores(student_id)
+            if scores_df is not None and not scores_df.empty:
+                low_count = int((scores_df['ai_score'] < 0.4).sum())
+                mid_count = int(((scores_df['ai_score'] >= 0.4) & (scores_df['ai_score'] < 0.7)).sum())
+                if low_count > 0:
+                    reminders.append(
+                        f"Có {low_count} môn đang ở mức CẦN CẢI THIỆN. Hãy tập trung nghe giảng hơn trong các tiết đó."
+                    )
+                if mid_count > 0:
+                    reminders.append(
+                        f"Có {mid_count} môn ở mức TRUNG BÌNH. Bạn có thể đặt mục tiêu cải thiện trong tuần này."
+                    )
+        except Exception:
+            pass
 
         return render_template(
             'index.html',
             user=user,
             timetable_info=timetable_info,
-            weekly_subject_load=weekly_subject_load,
             reminders=reminders,
         )
     

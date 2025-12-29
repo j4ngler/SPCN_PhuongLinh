@@ -1,8 +1,7 @@
 student_id,subject_code,teacher_id,comment,strengths,improvements,semester
-HS024,ENG301,AUTO001,Dữ liệu tự sinh cho học sinh mới,"Năng lực tốt, thái độ tích cực",Tiếp tục luyện tập và ôn bài,1
-HS024,DES201,AUTO002,Dữ liệu tự sinh cho học sinh mới,"Năng lực tốt, thái độ tích cực",Tiếp tục luyện tập và ôn bài,2
-HS024,PHYS101,AUTO003,Dữ liệu tự sinh cho học sinh mới,"Năng lực tốt, thái độ tích cực",Tiếp tục luyện tập và ôn bài,1
-HS024,ECON101,AUTO004,Dữ liệu tự sinh cho học sinh mới,"Năng lực tốt, thái độ tích cực",Tiếp tục luyện tập và ôn bài,2
-HS024,CHEM201,AUTO005,Dữ liệu tự sinh cho học sinh mới,"Năng lực tốt, thái độ tích cực",Tiếp tục luyện tập và ôn bài,1
-HS024,CS101,AUTO006,Dữ liệu tự sinh cho học sinh mới,"Năng lực tốt, thái độ tích cực",Tiếp tục luyện tập và ôn bài,2
-HS024,Tester,MANUAL,abcdefgh,vi du,vi du khac,1
+HS025,PHYS301,AUTO001,Dữ liệu tự sinh cho học sinh mới,"Năng lực tốt, thái độ tích cực",Tiếp tục luyện tập và ôn bài,1
+HS025,BIO101,AUTO002,Dữ liệu tự sinh cho học sinh mới,"Năng lực tốt, thái độ tích cực",Tiếp tục luyện tập và ôn bài,2
+HS025,MATH201,AUTO003,Dữ liệu tự sinh cho học sinh mới,"Năng lực tốt, thái độ tích cực",Tiếp tục luyện tập và ôn bài,1
+HS025,PHYS201,AUTO004,Dữ liệu tự sinh cho học sinh mới,"Năng lực tốt, thái độ tích cực",Tiếp tục luyện tập và ôn bài,2
+HS025,ENG301,AUTO005,Dữ liệu tự sinh cho học sinh mới,"Năng lực tốt, thái độ tích cực",Tiếp tục luyện tập và ôn bài,1
+HS025,HIST201,AUTO006,Dữ liệu tự sinh cho học sinh mới,"Năng lực tốt, thái độ tích cực",Tiếp tục luyện tập và ôn bài,2
