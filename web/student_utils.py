@@ -333,6 +333,26 @@ def _get_subject_load_for_student(student_id: str) -> List[Dict]:
         return []
 
 
+def _get_timetable_meta_for_student(student_id: str) -> Optional[Dict]:
+    """Lấy thông tin meta về thời khóa biểu (thời gian cập nhật gần nhất)"""
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT last_updated FROM student_timetable_meta WHERE student_id = ?",
+            (student_id,),
+        )
+        row = cursor.fetchone()
+        conn.close()
+        if row and row[0]:
+            return {
+                'last_updated': row[0],
+            }
+        return None
+    except Exception:
+        return None
+
+
 def _save_subject_load_for_student(student_id: str, subjects: List[Dict]) -> None:
     """Ghi cấu hình số buổi/tuần cho từng môn của học sinh vào DB"""
     conn = get_connection()

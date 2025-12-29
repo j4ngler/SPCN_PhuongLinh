@@ -36,6 +36,7 @@ from student_utils import (  # type: ignore
     initialize_student_data,
     _get_subject_load_for_student,
     _save_subject_load_for_student,
+    _get_timetable_meta_for_student,
 )
 
 # Import auth module
@@ -87,27 +88,17 @@ def create_app() -> Flask:
         """Trang chủ"""
         user = get_current_user()
         timetable_info = None
+        weekly_subject_load: List[Dict] = []
         reminders: List[str] = []
 
         # Nếu là học sinh, cố gắng lấy thời gian cập nhật TKB gần nhất + một vài lời nhắc đơn giản
         if user and user.get('role') == 'student':
             student_id = user['user_id']
-            # Lấy thông tin thời khóa biểu
-            try:
-                conn = get_connection()
-                cursor = conn.cursor()
-                cursor.execute(
-                    "SELECT last_updated FROM student_timetable_meta WHERE student_id = ?",
-                    (student_id,),
-                )
-                row = cursor.fetchone()
-                conn.close()
-                if row and row[0]:
-                    timetable_info = {
-                        'last_updated': row[0],
-                    }
-            except Exception:
-                timetable_info = None
+            # Lấy thông tin thời khóa biểu (thời gian cập nhật)
+            timetable_info = _get_timetable_meta_for_student(student_id)
+            
+            # Lấy danh sách môn học trong tuần (thời khóa biểu mới nhất)
+            weekly_subject_load = _get_subject_load_for_student(student_id)
 
             # Lời nhắc dựa trên AI Score (nếu có)
             try:
@@ -130,6 +121,7 @@ def create_app() -> Flask:
             'index.html',
             user=user,
             timetable_info=timetable_info,
+            weekly_subject_load=weekly_subject_load,
             reminders=reminders,
         )
     

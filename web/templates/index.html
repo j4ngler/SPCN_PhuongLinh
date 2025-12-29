@@ -18,9 +18,20 @@
     <div class="feature-card">
         <div class="feature-icon">📅</div>
         <h3>Thời khóa biểu tuần này</h3>
-        {% if timetable_info and timetable_info.last_updated %}
-            <p>TKB của bạn được cập nhật lần gần nhất vào:</p>
-            <p><strong>{{ timetable_info.last_updated }}</strong></p>
+        {% if weekly_subject_load %}
+            {% if timetable_info and timetable_info.last_updated %}
+                <p><small>Cập nhật: {{ timetable_info.last_updated }}</small></p>
+            {% endif %}
+            <ul style="list-style: none; padding: 0; margin: 1rem 0;">
+                {% for subject in weekly_subject_load %}
+                <li style="padding: 0.5rem 0; border-bottom: 1px solid #eee;">
+                    <strong>{{ subject.subject_name or subject.subject_code }}</strong>
+                    <span style="color: #666; margin-left: 0.5rem;">
+                        ({{ subject.lessons_per_week }} tiết/tuần)
+                    </span>
+                </li>
+                {% endfor %}
+            </ul>
         {% else %}
             <p>Bạn chưa nhập thời khóa biểu. Hãy thiết lập để hệ thống gợi ý chính xác hơn.</p>
         {% endif %}
